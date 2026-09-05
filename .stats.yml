@@ -1,4 +1,4 @@
 configured_endpoints: 37
-openapi_spec_url: https://storage.googleapis.com/stainless-sdk-openapi-specs/propraven/propraven-dfd3254eae7c75eace724337082c725cb9adcb060f96674a8ab74f53c0fcd416.yml
+openapi_spec_url: https://storage.googleapis.com/stainless-sdk-openapi-specs/propraven/propraven-e0414bec255d231bc7bdf17fe9587c4980551a6852c375ec6f7dd913f83a354e.yml
 openapi_spec_hash: 1f193389da1cfd26c30e70256a9c36cb
-config_hash: ad33d67113d5cf30e1f14412439a61a7
+config_hash: f95c0334e5e2c9f70de29b8de3cee734
