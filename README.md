@@ -13,6 +13,8 @@ It is generated with [Stainless](https://www.stainless.com/).
 
 The REST API documentation can be found on [propraven.com](https://propraven.com/docs). The full API of this library can be found in [api.md](api.md).
 
+PropRaven developer hub: [propraven.com/developers](https://propraven.com/developers) · Hosted MCP server: [propraven.com/docs/mcp](https://propraven.com/docs/mcp) · REST API v1 reference: [propraven.com/docs/v1](https://propraven.com/docs/v1).
+
 ## Installation
 
 ```sh
