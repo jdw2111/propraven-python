@@ -1,1972 +1,220 @@
-# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
-
 from __future__ import annotations
 
-import gc
-import os
-import sys
 import json
-import asyncio
-import inspect
-import dataclasses
-import tracemalloc
-from typing import Any, Union, TypeVar, Callable, Iterable, Iterator, Optional, Coroutine, cast
-from unittest import mock
-from typing_extensions import Literal, AsyncIterator, override
+import warnings
 
 import httpx
 import pytest
-from respx import MockRouter
-from pydantic import ValidationError
 
-from propraven import Propraven, AsyncPropraven, APIResponseValidationError
-from propraven._types import Omit
-from propraven._utils import asyncify
-from propraven._models import BaseModel, FinalRequestOptions
-from propraven._exceptions import APIStatusError, PropravenError, APITimeoutError, APIResponseValidationError
-from propraven._base_client import (
-    DEFAULT_TIMEOUT,
-    HTTPX_DEFAULT_TIMEOUT,
-    BaseClient,
-    OtherPlatform,
-    DefaultHttpxClient,
-    DefaultAsyncHttpxClient,
-    get_platform,
-    make_request_options,
-)
+from propraven import AsyncPropRaven, AsyncPropraven, PropRaven, Propraven, RateLimit, __version__
 
-from .utils import update_env
+from .conftest import BASE, Recorder
 
-T = TypeVar("T")
-base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
-api_key = "My API Key"
 
+def test_auth_header_and_default_headers(client: PropRaven, server: Recorder) -> None:
+    server.json({"parcel_id": "12104406"})
+    result = client.parcels.get("37:119:12104406")
+    assert result == {"parcel_id": "12104406"}
+    req = server.last
+    assert req.method == "GET"
+    assert req.headers["authorization"] == "Bearer pz_test_key"
+    assert req.headers["user-agent"] == f"propraven-python/{__version__}"
+    assert req.headers["accept"] == "application/json"
+    assert "content-type" not in req.headers
 
-def _get_params(client: BaseClient[Any, Any]) -> dict[str, str]:
-    request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-    url = httpx.URL(request.url)
-    return dict(url.params)
 
+def test_path_param_is_url_encoded(client: PropRaven, server: Recorder) -> None:
+    server.json({})
+    client.parcels.get("37:119:12104406")
+    assert server.last.url.raw_path == b"/api/v1/parcels/37%3A119%3A12104406"
+    server.json({})
+    client.owners.get("SMITH JOHN/A")
+    assert server.last.url.raw_path == b"/api/v1/owners/SMITH%20JOHN%2FA"
 
-def _low_retry_timeout(*_args: Any, **_kwargs: Any) -> float:
-    return 0.1
 
+def test_empty_path_param_rejected(client: PropRaven) -> None:
+    with pytest.raises(ValueError):
+        client.parcels.get("")
 
-def mirror_request_content(request: httpx.Request) -> httpx.Response:
-    return httpx.Response(200, content=request.content)
 
+def test_query_encoding(client: PropRaven, server: Recorder) -> None:
+    server.json({"data": []})
+    client.deals.absentee(county_fips="37119", out_of_state=True, min_value=None, limit=5, offset=0)
+    url = server.last.url
+    assert url.path == "/api/v1/deals/absentee"
+    assert url.params.get("county_fips") == "37119"
+    assert url.params.get("out_of_state") == "true"
+    assert url.params.get("limit") == "5"
+    assert url.params.get("offset") == "0"
+    assert "min_value" not in url.params  # None is omitted
 
-# note: we can't use the httpx.MockTransport class as it consumes the request
-#       body itself, which means we can't test that the body is read lazily
-class MockTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
-    def __init__(
-        self,
-        handler: Callable[[httpx.Request], httpx.Response]
-        | Callable[[httpx.Request], Coroutine[Any, Any, httpx.Response]],
-    ) -> None:
-        self.handler = handler
 
-    @override
-    def handle_request(
-        self,
-        request: httpx.Request,
-    ) -> httpx.Response:
-        assert not inspect.iscoroutinefunction(self.handler), "handler must not be a coroutine function"
-        assert inspect.isfunction(self.handler), "handler must be a function"
-        return self.handler(request)
+def test_query_false_and_float(client: PropRaven, server: Recorder) -> None:
+    server.json({"data": []})
+    client.deals.absentee(out_of_state=False, min_value=250000.5)
+    assert server.last.url.params.get("out_of_state") == "false"
+    assert server.last.url.params.get("min_value") == "250000.5"
 
-    @override
-    async def handle_async_request(
-        self,
-        request: httpx.Request,
-    ) -> httpx.Response:
-        assert inspect.iscoroutinefunction(self.handler), "handler must be a coroutine function"
-        return await self.handler(request)
 
+def test_query_array_comma_joined_and_explode() -> None:
+    from propraven._transport import encode_query
 
-@dataclasses.dataclass
-class Counter:
-    value: int = 0
+    assert encode_query({"ids": ["a", "b"], "n": None, "flag": True}) == [("ids", "a,b"), ("flag", "true")]
+    assert encode_query({"ids": ["a", "b"]}, explode={"ids"}) == [("ids", "a"), ("ids", "b")]
 
 
-def _make_sync_iterator(iterable: Iterable[T], counter: Optional[Counter] = None) -> Iterator[T]:
-    for item in iterable:
-        if counter:
-            counter.value += 1
-        yield item
-
-
-async def _make_async_iterator(iterable: Iterable[T], counter: Optional[Counter] = None) -> AsyncIterator[T]:
-    for item in iterable:
-        if counter:
-            counter.value += 1
-        yield item
-
-
-def _get_open_connections(client: Propraven | AsyncPropraven) -> int:
-    transport = client._client._transport
-    assert isinstance(transport, httpx.HTTPTransport) or isinstance(transport, httpx.AsyncHTTPTransport)
-
-    pool = transport._pool
-    return len(pool._requests)
-
-
-class TestPropraven:
-    @pytest.mark.respx(base_url=base_url)
-    def test_raw_response(self, respx_mock: MockRouter, client: Propraven) -> None:
-        respx_mock.post("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
-
-        response = client.post("/foo", cast_to=httpx.Response)
-        assert response.status_code == 200
-        assert isinstance(response, httpx.Response)
-        assert response.json() == {"foo": "bar"}
-
-    @pytest.mark.respx(base_url=base_url)
-    def test_raw_response_for_binary(self, respx_mock: MockRouter, client: Propraven) -> None:
-        respx_mock.post("/foo").mock(
-            return_value=httpx.Response(200, headers={"Content-Type": "application/binary"}, content='{"foo": "bar"}')
-        )
-
-        response = client.post("/foo", cast_to=httpx.Response)
-        assert response.status_code == 200
-        assert isinstance(response, httpx.Response)
-        assert response.json() == {"foo": "bar"}
-
-    def test_copy(self, client: Propraven) -> None:
-        copied = client.copy()
-        assert id(copied) != id(client)
-
-        copied = client.copy(api_key="another My API Key")
-        assert copied.api_key == "another My API Key"
-        assert client.api_key == "My API Key"
-
-    def test_copy_default_options(self, client: Propraven) -> None:
-        # options that have a default are overridden correctly
-        copied = client.copy(max_retries=7)
-        assert copied.max_retries == 7
-        assert client.max_retries == 2
-
-        copied2 = copied.copy(max_retries=6)
-        assert copied2.max_retries == 6
-        assert copied.max_retries == 7
-
-        # timeout
-        assert isinstance(client.timeout, httpx.Timeout)
-        copied = client.copy(timeout=None)
-        assert copied.timeout is None
-        assert isinstance(client.timeout, httpx.Timeout)
-
-    def test_copy_default_headers(self) -> None:
-        client = Propraven(
-            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_headers={"X-Foo": "bar"}
-        )
-        assert client.default_headers["X-Foo"] == "bar"
-
-        # does not override the already given value when not specified
-        copied = client.copy()
-        assert copied.default_headers["X-Foo"] == "bar"
-
-        # merges already given headers
-        copied = client.copy(default_headers={"X-Bar": "stainless"})
-        assert copied.default_headers["X-Foo"] == "bar"
-        assert copied.default_headers["X-Bar"] == "stainless"
-
-        # uses new values for any already given headers
-        copied = client.copy(default_headers={"X-Foo": "stainless"})
-        assert copied.default_headers["X-Foo"] == "stainless"
-
-        # set_default_headers
-
-        # completely overrides already set values
-        copied = client.copy(set_default_headers={})
-        assert copied.default_headers.get("X-Foo") is None
-
-        copied = client.copy(set_default_headers={"X-Bar": "Robert"})
-        assert copied.default_headers["X-Bar"] == "Robert"
-
-        with pytest.raises(
-            ValueError,
-            match="`default_headers` and `set_default_headers` arguments are mutually exclusive",
-        ):
-            client.copy(set_default_headers={}, default_headers={"X-Foo": "Bar"})
-        client.close()
-
-    def test_copy_default_query(self) -> None:
-        client = Propraven(
-            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_query={"foo": "bar"}
-        )
-        assert _get_params(client)["foo"] == "bar"
-
-        # does not override the already given value when not specified
-        copied = client.copy()
-        assert _get_params(copied)["foo"] == "bar"
-
-        # merges already given params
-        copied = client.copy(default_query={"bar": "stainless"})
-        params = _get_params(copied)
-        assert params["foo"] == "bar"
-        assert params["bar"] == "stainless"
-
-        # uses new values for any already given headers
-        copied = client.copy(default_query={"foo": "stainless"})
-        assert _get_params(copied)["foo"] == "stainless"
-
-        # set_default_query
-
-        # completely overrides already set values
-        copied = client.copy(set_default_query={})
-        assert _get_params(copied) == {}
-
-        copied = client.copy(set_default_query={"bar": "Robert"})
-        assert _get_params(copied)["bar"] == "Robert"
-
-        with pytest.raises(
-            ValueError,
-            # TODO: update
-            match="`default_query` and `set_default_query` arguments are mutually exclusive",
-        ):
-            client.copy(set_default_query={}, default_query={"foo": "Bar"})
-
-        client.close()
-
-    def test_copy_signature(self, client: Propraven) -> None:
-        # ensure the same parameters that can be passed to the client are defined in the `.copy()` method
-        init_signature = inspect.signature(
-            # mypy doesn't like that we access the `__init__` property.
-            client.__init__,  # type: ignore[misc]
-        )
-        copy_signature = inspect.signature(client.copy)
-        exclude_params = {"transport", "proxies", "_strict_response_validation"}
-
-        for name in init_signature.parameters.keys():
-            if name in exclude_params:
-                continue
-
-            copy_param = copy_signature.parameters.get(name)
-            assert copy_param is not None, f"copy() signature is missing the {name} param"
-
-    @pytest.mark.skipif(sys.version_info >= (3, 10), reason="fails because of a memory leak that started from 3.12")
-    def test_copy_build_request(self, client: Propraven) -> None:
-        options = FinalRequestOptions(method="get", url="/foo")
-
-        def build_request(options: FinalRequestOptions) -> None:
-            client_copy = client.copy()
-            client_copy._build_request(options)
-
-        # ensure that the machinery is warmed up before tracing starts.
-        build_request(options)
-        gc.collect()
-
-        tracemalloc.start(1000)
-
-        snapshot_before = tracemalloc.take_snapshot()
-
-        ITERATIONS = 10
-        for _ in range(ITERATIONS):
-            build_request(options)
-
-        gc.collect()
-        snapshot_after = tracemalloc.take_snapshot()
-
-        tracemalloc.stop()
-
-        def add_leak(leaks: list[tracemalloc.StatisticDiff], diff: tracemalloc.StatisticDiff) -> None:
-            if diff.count == 0:
-                # Avoid false positives by considering only leaks (i.e. allocations that persist).
-                return
-
-            if diff.count % ITERATIONS != 0:
-                # Avoid false positives by considering only leaks that appear per iteration.
-                return
-
-            for frame in diff.traceback:
-                if any(
-                    frame.filename.endswith(fragment)
-                    for fragment in [
-                        # to_raw_response_wrapper leaks through the @functools.wraps() decorator.
-                        #
-                        # removing the decorator fixes the leak for reasons we don't understand.
-                        "propraven/_legacy_response.py",
-                        "propraven/_response.py",
-                        # pydantic.BaseModel.model_dump || pydantic.BaseModel.dict leak memory for some reason.
-                        "propraven/_compat.py",
-                        # Standard library leaks we don't care about.
-                        "/logging/__init__.py",
-                    ]
-                ):
-                    return
-
-            leaks.append(diff)
-
-        leaks: list[tracemalloc.StatisticDiff] = []
-        for diff in snapshot_after.compare_to(snapshot_before, "traceback"):
-            add_leak(leaks, diff)
-        if leaks:
-            for leak in leaks:
-                print("MEMORY LEAK:", leak)
-                for frame in leak.traceback:
-                    print(frame)
-            raise AssertionError()
-
-    def test_request_timeout(self, client: Propraven) -> None:
-        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-        timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
-        assert timeout == DEFAULT_TIMEOUT
-
-        request = client._build_request(FinalRequestOptions(method="get", url="/foo", timeout=httpx.Timeout(100.0)))
-        timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
-        assert timeout == httpx.Timeout(100.0)
-
-    def test_client_timeout_option(self) -> None:
-        client = Propraven(
-            base_url=base_url, api_key=api_key, _strict_response_validation=True, timeout=httpx.Timeout(0)
-        )
-
-        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-        timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
-        assert timeout == httpx.Timeout(0)
-
-        client.close()
-
-    def test_http_client_timeout_option(self) -> None:
-        # custom timeout given to the httpx client should be used
-        with httpx.Client(timeout=None) as http_client:
-            client = Propraven(
-                base_url=base_url, api_key=api_key, _strict_response_validation=True, http_client=http_client
-            )
-
-            request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-            timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
-            assert timeout == httpx.Timeout(None)
-
-            client.close()
-
-        # no timeout given to the httpx client should not use the httpx default
-        with httpx.Client() as http_client:
-            client = Propraven(
-                base_url=base_url, api_key=api_key, _strict_response_validation=True, http_client=http_client
-            )
-
-            request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-            timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
-            assert timeout == DEFAULT_TIMEOUT
-
-            client.close()
-
-        # explicitly passing the default timeout currently results in it being ignored
-        with httpx.Client(timeout=HTTPX_DEFAULT_TIMEOUT) as http_client:
-            client = Propraven(
-                base_url=base_url, api_key=api_key, _strict_response_validation=True, http_client=http_client
-            )
-
-            request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-            timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
-            assert timeout == DEFAULT_TIMEOUT  # our default
-
-            client.close()
-
-    async def test_invalid_http_client(self) -> None:
-        with pytest.raises(TypeError, match="Invalid `http_client` arg"):
-            async with httpx.AsyncClient() as http_client:
-                Propraven(
-                    base_url=base_url,
-                    api_key=api_key,
-                    _strict_response_validation=True,
-                    http_client=cast(Any, http_client),
-                )
-
-    def test_default_headers_option(self) -> None:
-        test_client = Propraven(
-            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_headers={"X-Foo": "bar"}
-        )
-        request = test_client._build_request(FinalRequestOptions(method="get", url="/foo"))
-        assert request.headers.get("x-foo") == "bar"
-        assert request.headers.get("x-stainless-lang") == "python"
-
-        test_client2 = Propraven(
-            base_url=base_url,
-            api_key=api_key,
-            _strict_response_validation=True,
-            default_headers={
-                "X-Foo": "stainless",
-                "X-Stainless-Lang": "my-overriding-header",
-            },
-        )
-        request = test_client2._build_request(FinalRequestOptions(method="get", url="/foo"))
-        assert request.headers.get("x-foo") == "stainless"
-        assert request.headers.get("x-stainless-lang") == "my-overriding-header"
-
-        test_client.close()
-        test_client2.close()
-
-    def test_validate_headers(self) -> None:
-        client = Propraven(base_url=base_url, api_key=api_key, _strict_response_validation=True)
-        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-        assert request.headers.get("Authorization") == f"Bearer {api_key}"
-
-        with pytest.raises(PropravenError):
-            with update_env(**{"PROPRAVEN_API_KEY": Omit()}):
-                client2 = Propraven(base_url=base_url, api_key=None, _strict_response_validation=True)
-            _ = client2
-
-    def test_default_query_option(self) -> None:
-        client = Propraven(
-            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_query={"query_param": "bar"}
-        )
-        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-        url = httpx.URL(request.url)
-        assert dict(url.params) == {"query_param": "bar"}
-
-        request = client._build_request(
-            FinalRequestOptions(
-                method="get",
-                url="/foo",
-                params={"foo": "baz", "query_param": "overridden"},
-            )
-        )
-        url = httpx.URL(request.url)
-        assert dict(url.params) == {"foo": "baz", "query_param": "overridden"}
-
-        client.close()
-
-    def test_hardcoded_query_params_in_url(self, client: Propraven) -> None:
-        request = client._build_request(FinalRequestOptions(method="get", url="/foo?beta=true"))
-        url = httpx.URL(request.url)
-        assert dict(url.params) == {"beta": "true"}
-
-        request = client._build_request(
-            FinalRequestOptions(
-                method="get",
-                url="/foo?beta=true",
-                params={"limit": "10", "page": "abc"},
-            )
-        )
-        url = httpx.URL(request.url)
-        assert dict(url.params) == {"beta": "true", "limit": "10", "page": "abc"}
-
-        request = client._build_request(
-            FinalRequestOptions(
-                method="get",
-                url="/files/a%2Fb?beta=true",
-                params={"limit": "10"},
-            )
-        )
-        assert request.url.raw_path == b"/files/a%2Fb?beta=true&limit=10"
-
-    def test_request_extra_json(self, client: Propraven) -> None:
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                json_data={"foo": "bar"},
-                extra_json={"baz": False},
-            ),
-        )
-        data = json.loads(request.content.decode("utf-8"))
-        assert data == {"foo": "bar", "baz": False}
-
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                extra_json={"baz": False},
-            ),
-        )
-        data = json.loads(request.content.decode("utf-8"))
-        assert data == {"baz": False}
-
-        # `extra_json` takes priority over `json_data` when keys clash
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                json_data={"foo": "bar", "baz": True},
-                extra_json={"baz": None},
-            ),
-        )
-        data = json.loads(request.content.decode("utf-8"))
-        assert data == {"foo": "bar", "baz": None}
-
-    def test_request_extra_headers(self, client: Propraven) -> None:
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                **make_request_options(extra_headers={"X-Foo": "Foo"}),
-            ),
-        )
-        assert request.headers.get("X-Foo") == "Foo"
-
-        # `extra_headers` takes priority over `default_headers` when keys clash
-        request = client.with_options(default_headers={"X-Bar": "true"})._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                **make_request_options(
-                    extra_headers={"X-Bar": "false"},
-                ),
-            ),
-        )
-        assert request.headers.get("X-Bar") == "false"
-
-    def test_request_extra_query(self, client: Propraven) -> None:
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                **make_request_options(
-                    extra_query={"my_query_param": "Foo"},
-                ),
-            ),
-        )
-        params = dict(request.url.params)
-        assert params == {"my_query_param": "Foo"}
-
-        # if both `query` and `extra_query` are given, they are merged
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                **make_request_options(
-                    query={"bar": "1"},
-                    extra_query={"foo": "2"},
-                ),
-            ),
-        )
-        params = dict(request.url.params)
-        assert params == {"bar": "1", "foo": "2"}
-
-        # `extra_query` takes priority over `query` when keys clash
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                **make_request_options(
-                    query={"foo": "1"},
-                    extra_query={"foo": "2"},
-                ),
-            ),
-        )
-        params = dict(request.url.params)
-        assert params == {"foo": "2"}
-
-    def test_multipart_repeating_array(self, client: Propraven) -> None:
-        request = client._build_request(
-            FinalRequestOptions.construct(
-                method="post",
-                url="/foo",
-                headers={"Content-Type": "multipart/form-data; boundary=6b7ba517decee4a450543ea6ae821c82"},
-                json_data={"array": ["foo", "bar"]},
-                files=[("foo.txt", b"hello world")],
-            )
-        )
-
-        assert request.read().split(b"\r\n") == [
-            b"--6b7ba517decee4a450543ea6ae821c82",
-            b'Content-Disposition: form-data; name="array[]"',
-            b"",
-            b"foo",
-            b"--6b7ba517decee4a450543ea6ae821c82",
-            b'Content-Disposition: form-data; name="array[]"',
-            b"",
-            b"bar",
-            b"--6b7ba517decee4a450543ea6ae821c82",
-            b'Content-Disposition: form-data; name="foo.txt"; filename="upload"',
-            b"Content-Type: application/octet-stream",
-            b"",
-            b"hello world",
-            b"--6b7ba517decee4a450543ea6ae821c82--",
-            b"",
-        ]
-
-    @pytest.mark.respx(base_url=base_url)
-    def test_binary_content_upload(self, respx_mock: MockRouter, client: Propraven) -> None:
-        respx_mock.post("/upload").mock(side_effect=mirror_request_content)
-
-        file_content = b"Hello, this is a test file."
-
-        response = client.post(
-            "/upload",
-            content=file_content,
-            cast_to=httpx.Response,
-            options={"headers": {"Content-Type": "application/octet-stream"}},
-        )
-
-        assert response.status_code == 200
-        assert response.request.headers["Content-Type"] == "application/octet-stream"
-        assert response.content == file_content
-
-    def test_binary_content_upload_with_iterator(self) -> None:
-        file_content = b"Hello, this is a test file."
-        counter = Counter()
-        iterator = _make_sync_iterator([file_content], counter=counter)
-
-        def mock_handler(request: httpx.Request) -> httpx.Response:
-            assert counter.value == 0, "the request body should not have been read"
-            return httpx.Response(200, content=request.read())
-
-        with Propraven(
-            base_url=base_url,
-            api_key=api_key,
-            _strict_response_validation=True,
-            http_client=httpx.Client(transport=MockTransport(handler=mock_handler)),
-        ) as client:
-            response = client.post(
-                "/upload",
-                content=iterator,
-                cast_to=httpx.Response,
-                options={"headers": {"Content-Type": "application/octet-stream"}},
-            )
-
-            assert response.status_code == 200
-            assert response.request.headers["Content-Type"] == "application/octet-stream"
-            assert response.content == file_content
-            assert counter.value == 1
-
-    @pytest.mark.respx(base_url=base_url)
-    def test_binary_content_upload_with_body_is_deprecated(self, respx_mock: MockRouter, client: Propraven) -> None:
-        respx_mock.post("/upload").mock(side_effect=mirror_request_content)
-
-        file_content = b"Hello, this is a test file."
-
-        with pytest.deprecated_call(
-            match="Passing raw bytes as `body` is deprecated and will be removed in a future version. Please pass raw bytes via the `content` parameter instead."
-        ):
-            response = client.post(
-                "/upload",
-                body=file_content,
-                cast_to=httpx.Response,
-                options={"headers": {"Content-Type": "application/octet-stream"}},
-            )
-
-        assert response.status_code == 200
-        assert response.request.headers["Content-Type"] == "application/octet-stream"
-        assert response.content == file_content
-
-    @pytest.mark.respx(base_url=base_url)
-    def test_basic_union_response(self, respx_mock: MockRouter, client: Propraven) -> None:
-        class Model1(BaseModel):
-            name: str
-
-        class Model2(BaseModel):
-            foo: str
-
-        respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
-
-        response = client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
-        assert isinstance(response, Model2)
-        assert response.foo == "bar"
-
-    @pytest.mark.respx(base_url=base_url)
-    def test_union_response_different_types(self, respx_mock: MockRouter, client: Propraven) -> None:
-        """Union of objects with the same field name using a different type"""
-
-        class Model1(BaseModel):
-            foo: int
-
-        class Model2(BaseModel):
-            foo: str
-
-        respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
-
-        response = client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
-        assert isinstance(response, Model2)
-        assert response.foo == "bar"
-
-        respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": 1}))
-
-        response = client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
-        assert isinstance(response, Model1)
-        assert response.foo == 1
-
-    @pytest.mark.respx(base_url=base_url)
-    def test_non_application_json_content_type_for_json_data(self, respx_mock: MockRouter, client: Propraven) -> None:
-        """
-        Response that sets Content-Type to something other than application/json but returns json data
-        """
-
-        class Model(BaseModel):
-            foo: int
-
-        respx_mock.get("/foo").mock(
-            return_value=httpx.Response(
-                200,
-                content=json.dumps({"foo": 2}),
-                headers={"Content-Type": "application/text"},
-            )
-        )
-
-        response = client.get("/foo", cast_to=Model)
-        assert isinstance(response, Model)
-        assert response.foo == 2
-
-    def test_base_url_setter(self) -> None:
-        client = Propraven(base_url="https://example.com/from_init", api_key=api_key, _strict_response_validation=True)
-        assert client.base_url == "https://example.com/from_init/"
-
-        client.base_url = "https://example.com/from_setter"  # type: ignore[assignment]
-
-        assert client.base_url == "https://example.com/from_setter/"
-
-        client.close()
-
-    def test_base_url_env(self) -> None:
-        with update_env(PROPRAVEN_BASE_URL="http://localhost:5000/from/env"):
-            client = Propraven(api_key=api_key, _strict_response_validation=True)
-            assert client.base_url == "http://localhost:5000/from/env/"
-
-    @pytest.mark.parametrize(
-        "client",
-        [
-            Propraven(base_url="http://localhost:5000/custom/path/", api_key=api_key, _strict_response_validation=True),
-            Propraven(
-                base_url="http://localhost:5000/custom/path/",
-                api_key=api_key,
-                _strict_response_validation=True,
-                http_client=httpx.Client(),
-            ),
-        ],
-        ids=["standard", "custom http client"],
+def test_json_body(client: PropRaven, server: Recorder) -> None:
+    server.json({"data": [], "total": 0, "limit": 50, "offset": 0})
+    client.search.parcels(
+        bounds={"north": 35.215, "south": 35.205, "east": -80.855, "west": -80.865},
+        filters={"valueRange": {"min": 100000, "max": None}},
+        limit=50,
     )
-    def test_base_url_trailing_slash(self, client: Propraven) -> None:
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                json_data={"foo": "bar"},
-            ),
-        )
-        assert request.url == "http://localhost:5000/custom/path/foo"
-        client.close()
+    req = server.last
+    assert req.method == "POST"
+    assert req.url.path == "/api/v1/search"
+    assert req.headers["content-type"] == "application/json"
+    body = server.body()
+    assert body == {
+        "bounds": {"north": 35.215, "south": 35.205, "east": -80.855, "west": -80.865},
+        # nested None is preserved (explicit null); unset top-level keywords are omitted
+        "filters": {"valueRange": {"min": 100000, "max": None}},
+        "limit": 50,
+    }
 
-    @pytest.mark.parametrize(
-        "client",
-        [
-            Propraven(base_url="http://localhost:5000/custom/path/", api_key=api_key, _strict_response_validation=True),
-            Propraven(
-                base_url="http://localhost:5000/custom/path/",
-                api_key=api_key,
-                _strict_response_validation=True,
-                http_client=httpx.Client(),
-            ),
-        ],
-        ids=["standard", "custom http client"],
+
+def test_extra_body_query_headers(client: PropRaven, server: Recorder) -> None:
+    server.json({})
+    client.lookup.batch(
+        queries=["a"],
+        extra_body={"debug": True},
+        extra_query={"trace": 1},
+        extra_headers={"X-Test": "1"},
     )
-    def test_base_url_no_trailing_slash(self, client: Propraven) -> None:
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                json_data={"foo": "bar"},
-            ),
-        )
-        assert request.url == "http://localhost:5000/custom/path/foo"
-        client.close()
+    assert server.body() == {"queries": ["a"], "debug": True}
+    assert server.last.url.params.get("trace") == "1"
+    assert server.last.headers["x-test"] == "1"
 
-    @pytest.mark.parametrize(
-        "client",
-        [
-            Propraven(base_url="http://localhost:5000/custom/path/", api_key=api_key, _strict_response_validation=True),
-            Propraven(
-                base_url="http://localhost:5000/custom/path/",
-                api_key=api_key,
-                _strict_response_validation=True,
-                http_client=httpx.Client(),
-            ),
-        ],
-        ids=["standard", "custom http client"],
+
+def test_header_params_friendly_names(client: PropRaven, server: Recorder) -> None:
+    server.json({"balance": 1})
+    client.credits.balance(credit_token="ct_123")
+    assert server.last.headers["x-credit-token"] == "ct_123"
+    server.json({})
+    client.parcels.report("37:119:1", payment=None)
+    assert "x-payment" not in server.last.headers
+
+
+def test_csv_endpoint_returns_string(client: PropRaven, server: Recorder) -> None:
+    server.add(httpx.Response(200, content=b"parcel_id,address\n1,123 Main\n", headers={"content-type": "text/csv"}))
+    out = client.search.export(north=35.2, south=35.1, east=-80.8, west=-80.9)
+    assert out == "parcel_id,address\n1,123 Main\n"
+    assert server.last.headers["accept"].startswith("text/csv")
+
+
+def test_csv_or_json_endpoint_json_branch(client: PropRaven, server: Recorder) -> None:
+    server.json({"preview": True, "mailing_rows": 3})
+    out = client.cohorts.export("c1", preview=True)
+    assert out == {"preview": True, "mailing_rows": 3}
+
+
+def test_missing_key_is_allowed(server: Recorder) -> None:
+    http = httpx.Client(transport=httpx.MockTransport(server.handle))
+    c = PropRaven(base_url=BASE, http_client=http)
+    assert c.api_key is None
+    server.json({"status": "ok"})
+    c.freshness.get()
+    assert "authorization" not in server.last.headers
+
+
+def test_env_key_and_base_url(monkeypatch: pytest.MonkeyPatch, server: Recorder) -> None:
+    monkeypatch.setenv("PROPRAVEN_API_KEY", "pz_from_env")
+    monkeypatch.setenv("PROPRAVEN_BASE_URL", "https://env.example/")
+    http = httpx.Client(transport=httpx.MockTransport(server.handle))
+    c = PropRaven(http_client=http)
+    assert c.base_url == "https://env.example"
+    server.json({})
+    c.account.usage()
+    assert str(server.last.url) == "https://env.example/api/v1/account/usage"
+    assert server.last.headers["authorization"] == "Bearer pz_from_env"
+
+
+def test_default_base_url() -> None:
+    c = PropRaven(api_key="pz_x")
+    assert c.base_url == "https://propraven.com"
+    c.close()
+
+
+def test_non_pz_key_warns_but_works(server: Recorder) -> None:
+    http = httpx.Client(transport=httpx.MockTransport(server.handle))
+    with pytest.warns(UserWarning, match="pz_"):
+        c = PropRaven(api_key="sk_wrong", base_url=BASE, http_client=http)
+    server.json({})
+    c.account.usage()
+    assert server.last.headers["authorization"] == "Bearer sk_wrong"
+
+
+def test_pz_key_does_not_warn() -> None:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        PropRaven(api_key="pz_ok").close()
+
+
+def test_aliases() -> None:
+    assert Propraven is PropRaven
+    assert AsyncPropraven is AsyncPropRaven
+
+
+def test_default_timeout_and_override(client: PropRaven, server: Recorder) -> None:
+    seen = []
+
+    def capture(request: httpx.Request) -> httpx.Response:
+        seen.append(request.extensions.get("timeout"))
+        return httpx.Response(200, json={})
+
+    server.add(capture).add(capture)
+    client.account.usage()
+    client.account.usage(timeout=5)
+    assert seen[0]["read"] == 60.0
+    assert seen[1]["read"] == 5
+
+
+def test_rate_limit_info(client: PropRaven, server: Recorder) -> None:
+    assert client.last_rate_limit is None
+    server.json(
+        {}, headers={"X-RateLimit-Limit": "1000", "X-RateLimit-Remaining": "998", "X-RateLimit-Reset": "1700000000"}
     )
-    def test_absolute_request_url(self, client: Propraven) -> None:
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="https://myapi.com/foo",
-                json_data={"foo": "bar"},
-            ),
-        )
-        assert request.url == "https://myapi.com/foo"
-        client.close()
+    client.account.usage()
+    assert client.last_rate_limit == RateLimit(limit=1000, remaining=998, reset=1700000000)
 
-    def test_copied_client_does_not_close_http(self) -> None:
-        test_client = Propraven(base_url=base_url, api_key=api_key, _strict_response_validation=True)
-        assert not test_client.is_closed()
 
-        copied = test_client.copy()
-        assert copied is not test_client
+def test_request_escape_hatch(client: PropRaven, server: Recorder) -> None:
+    server.json({"ok": True})
+    assert client.request("GET", "/api/v1/freshness", query={"x": True}) == {"ok": True}
+    assert server.last.url.params.get("x") == "true"
 
-        del copied
 
-        assert not test_client.is_closed()
+def test_context_manager() -> None:
+    with PropRaven(api_key="pz_x") as c:
+        assert isinstance(c, PropRaven)
 
-    def test_client_context_manager(self) -> None:
-        test_client = Propraven(base_url=base_url, api_key=api_key, _strict_response_validation=True)
-        with test_client as c2:
-            assert c2 is test_client
-            assert not c2.is_closed()
-            assert not test_client.is_closed()
-        assert test_client.is_closed()
 
-    @pytest.mark.respx(base_url=base_url)
-    def test_client_response_validation_error(self, respx_mock: MockRouter, client: Propraven) -> None:
-        class Model(BaseModel):
-            foo: str
+def test_body_keyword_required(client: PropRaven) -> None:
+    with pytest.raises(TypeError):
+        client.lookup.batch()  # type: ignore[call-arg]
 
-        respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": {"invalid": True}}))
 
-        with pytest.raises(APIResponseValidationError) as exc:
-            client.get("/foo", cast_to=Model)
+async def test_async_client(aclient: AsyncPropRaven, server: Recorder) -> None:
+    server.json({"parcel_id": "1"})
+    out = await aclient.parcels.get("37:119:1")
+    assert out == {"parcel_id": "1"}
+    assert server.last.headers["authorization"] == "Bearer pz_test_key"
+    server.json({"data": []})
+    await aclient.search.parcels(limit=1)
+    assert json.loads(server.last.content) == {"limit": 1}
+    await aclient.close()
 
-        assert isinstance(exc.value.__cause__, ValidationError)
 
-    def test_client_max_retries_validation(self) -> None:
-        with pytest.raises(TypeError, match=r"max_retries cannot be None"):
-            Propraven(base_url=base_url, api_key=api_key, _strict_response_validation=True, max_retries=cast(Any, None))
-
-    @pytest.mark.respx(base_url=base_url)
-    def test_received_text_for_expected_json(self, respx_mock: MockRouter) -> None:
-        class Model(BaseModel):
-            name: str
-
-        respx_mock.get("/foo").mock(return_value=httpx.Response(200, text="my-custom-format"))
-
-        strict_client = Propraven(base_url=base_url, api_key=api_key, _strict_response_validation=True)
-
-        with pytest.raises(APIResponseValidationError):
-            strict_client.get("/foo", cast_to=Model)
-
-        non_strict_client = Propraven(base_url=base_url, api_key=api_key, _strict_response_validation=False)
-
-        response = non_strict_client.get("/foo", cast_to=Model)
-        assert isinstance(response, str)  # type: ignore[unreachable]
-
-        strict_client.close()
-        non_strict_client.close()
-
-    @pytest.mark.parametrize(
-        "remaining_retries,retry_after,timeout",
-        [
-            [3, "20", 20],
-            [3, "0", 0.5],
-            [3, "-10", 0.5],
-            [3, "60", 60],
-            [3, "61", 0.5],
-            [3, "Fri, 29 Sep 2023 16:26:57 GMT", 20],
-            [3, "Fri, 29 Sep 2023 16:26:37 GMT", 0.5],
-            [3, "Fri, 29 Sep 2023 16:26:27 GMT", 0.5],
-            [3, "Fri, 29 Sep 2023 16:27:37 GMT", 60],
-            [3, "Fri, 29 Sep 2023 16:27:38 GMT", 0.5],
-            [3, "99999999999999999999999999999999999", 0.5],
-            [3, "Zun, 29 Sep 2023 16:26:27 GMT", 0.5],
-            [3, "", 0.5],
-            [2, "", 0.5 * 2.0],
-            [1, "", 0.5 * 4.0],
-            [-1100, "", 8],  # test large number potentially overflowing
-        ],
-    )
-    @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
-    def test_parse_retry_after_header(
-        self, remaining_retries: int, retry_after: str, timeout: float, client: Propraven
-    ) -> None:
-        headers = httpx.Headers({"retry-after": retry_after})
-        options = FinalRequestOptions(method="get", url="/foo", max_retries=3)
-        calculated = client._calculate_retry_timeout(remaining_retries, options, headers)
-        assert calculated == pytest.approx(timeout, 0.5 * 0.875)  # pyright: ignore[reportUnknownMemberType]
-
-    @mock.patch("propraven._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
-    @pytest.mark.respx(base_url=base_url)
-    def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter, client: Propraven) -> None:
-        respx_mock.get("/api/v1/parcels/37183:0012345").mock(side_effect=httpx.TimeoutException("Test timeout error"))
-
-        with pytest.raises(APITimeoutError):
-            client.v1.parcels.with_streaming_response.retrieve("37183:0012345").__enter__()
-
-        assert _get_open_connections(client) == 0
-
-    @mock.patch("propraven._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
-    @pytest.mark.respx(base_url=base_url)
-    def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter, client: Propraven) -> None:
-        respx_mock.get("/api/v1/parcels/37183:0012345").mock(return_value=httpx.Response(500))
-
-        with pytest.raises(APIStatusError):
-            client.v1.parcels.with_streaming_response.retrieve("37183:0012345").__enter__()
-        assert _get_open_connections(client) == 0
-
-    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
-    @mock.patch("propraven._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
-    @pytest.mark.respx(base_url=base_url)
-    @pytest.mark.parametrize("failure_mode", ["status", "exception"])
-    def test_retries_taken(
-        self,
-        client: Propraven,
-        failures_before_success: int,
-        failure_mode: Literal["status", "exception"],
-        respx_mock: MockRouter,
-    ) -> None:
-        client = client.with_options(max_retries=4)
-
-        nb_retries = 0
-
-        def retry_handler(_request: httpx.Request) -> httpx.Response:
-            nonlocal nb_retries
-            if nb_retries < failures_before_success:
-                nb_retries += 1
-                if failure_mode == "exception":
-                    raise RuntimeError("oops")
-                return httpx.Response(500)
-            return httpx.Response(200)
-
-        respx_mock.get("/api/v1/parcels/37183:0012345").mock(side_effect=retry_handler)
-
-        response = client.v1.parcels.with_raw_response.retrieve("37183:0012345")
-
-        assert response.retries_taken == failures_before_success
-        assert int(response.http_request.headers.get("x-stainless-retry-count")) == failures_before_success
-
-    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
-    @mock.patch("propraven._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
-    @pytest.mark.respx(base_url=base_url)
-    def test_omit_retry_count_header(
-        self, client: Propraven, failures_before_success: int, respx_mock: MockRouter
-    ) -> None:
-        client = client.with_options(max_retries=4)
-
-        nb_retries = 0
-
-        def retry_handler(_request: httpx.Request) -> httpx.Response:
-            nonlocal nb_retries
-            if nb_retries < failures_before_success:
-                nb_retries += 1
-                return httpx.Response(500)
-            return httpx.Response(200)
-
-        respx_mock.get("/api/v1/parcels/37183:0012345").mock(side_effect=retry_handler)
-
-        response = client.v1.parcels.with_raw_response.retrieve(
-            "37183:0012345", extra_headers={"x-stainless-retry-count": Omit()}
-        )
-
-        assert len(response.http_request.headers.get_list("x-stainless-retry-count")) == 0
-
-    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
-    @mock.patch("propraven._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
-    @pytest.mark.respx(base_url=base_url)
-    def test_overwrite_retry_count_header(
-        self, client: Propraven, failures_before_success: int, respx_mock: MockRouter
-    ) -> None:
-        client = client.with_options(max_retries=4)
-
-        nb_retries = 0
-
-        def retry_handler(_request: httpx.Request) -> httpx.Response:
-            nonlocal nb_retries
-            if nb_retries < failures_before_success:
-                nb_retries += 1
-                return httpx.Response(500)
-            return httpx.Response(200)
-
-        respx_mock.get("/api/v1/parcels/37183:0012345").mock(side_effect=retry_handler)
-
-        response = client.v1.parcels.with_raw_response.retrieve(
-            "37183:0012345", extra_headers={"x-stainless-retry-count": "42"}
-        )
-
-        assert response.http_request.headers.get("x-stainless-retry-count") == "42"
-
-    def test_proxy_environment_variables(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        # Test that the proxy environment variables are set correctly
-        monkeypatch.setenv("HTTPS_PROXY", "https://example.org")
-        # Delete in case our environment has any proxy env vars set
-        monkeypatch.delenv("HTTP_PROXY", raising=False)
-        monkeypatch.delenv("ALL_PROXY", raising=False)
-        monkeypatch.delenv("NO_PROXY", raising=False)
-        monkeypatch.delenv("http_proxy", raising=False)
-        monkeypatch.delenv("https_proxy", raising=False)
-        monkeypatch.delenv("all_proxy", raising=False)
-        monkeypatch.delenv("no_proxy", raising=False)
-
-        client = DefaultHttpxClient()
-
-        mounts = tuple(client._mounts.items())
-        assert len(mounts) == 1
-        assert mounts[0][0].pattern == "https://"
-
-    @pytest.mark.filterwarnings("ignore:.*deprecated.*:DeprecationWarning")
-    def test_default_client_creation(self) -> None:
-        # Ensure that the client can be initialized without any exceptions
-        DefaultHttpxClient(
-            verify=True,
-            cert=None,
-            trust_env=True,
-            http1=True,
-            http2=False,
-            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
-        )
-
-    @pytest.mark.respx(base_url=base_url)
-    def test_follow_redirects(self, respx_mock: MockRouter, client: Propraven) -> None:
-        # Test that the default follow_redirects=True allows following redirects
-        respx_mock.post("/redirect").mock(
-            return_value=httpx.Response(302, headers={"Location": f"{base_url}/redirected"})
-        )
-        respx_mock.get("/redirected").mock(return_value=httpx.Response(200, json={"status": "ok"}))
-
-        response = client.post("/redirect", body={"key": "value"}, cast_to=httpx.Response)
-        assert response.status_code == 200
-        assert response.json() == {"status": "ok"}
-
-    @pytest.mark.respx(base_url=base_url)
-    def test_follow_redirects_disabled(self, respx_mock: MockRouter, client: Propraven) -> None:
-        # Test that follow_redirects=False prevents following redirects
-        respx_mock.post("/redirect").mock(
-            return_value=httpx.Response(302, headers={"Location": f"{base_url}/redirected"})
-        )
-
-        with pytest.raises(APIStatusError) as exc_info:
-            client.post("/redirect", body={"key": "value"}, options={"follow_redirects": False}, cast_to=httpx.Response)
-
-        assert exc_info.value.response.status_code == 302
-        assert exc_info.value.response.headers["Location"] == f"{base_url}/redirected"
-
-
-class TestAsyncPropraven:
-    @pytest.mark.respx(base_url=base_url)
-    async def test_raw_response(self, respx_mock: MockRouter, async_client: AsyncPropraven) -> None:
-        respx_mock.post("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
-
-        response = await async_client.post("/foo", cast_to=httpx.Response)
-        assert response.status_code == 200
-        assert isinstance(response, httpx.Response)
-        assert response.json() == {"foo": "bar"}
-
-    @pytest.mark.respx(base_url=base_url)
-    async def test_raw_response_for_binary(self, respx_mock: MockRouter, async_client: AsyncPropraven) -> None:
-        respx_mock.post("/foo").mock(
-            return_value=httpx.Response(200, headers={"Content-Type": "application/binary"}, content='{"foo": "bar"}')
-        )
-
-        response = await async_client.post("/foo", cast_to=httpx.Response)
-        assert response.status_code == 200
-        assert isinstance(response, httpx.Response)
-        assert response.json() == {"foo": "bar"}
-
-    def test_copy(self, async_client: AsyncPropraven) -> None:
-        copied = async_client.copy()
-        assert id(copied) != id(async_client)
-
-        copied = async_client.copy(api_key="another My API Key")
-        assert copied.api_key == "another My API Key"
-        assert async_client.api_key == "My API Key"
-
-    def test_copy_default_options(self, async_client: AsyncPropraven) -> None:
-        # options that have a default are overridden correctly
-        copied = async_client.copy(max_retries=7)
-        assert copied.max_retries == 7
-        assert async_client.max_retries == 2
-
-        copied2 = copied.copy(max_retries=6)
-        assert copied2.max_retries == 6
-        assert copied.max_retries == 7
-
-        # timeout
-        assert isinstance(async_client.timeout, httpx.Timeout)
-        copied = async_client.copy(timeout=None)
-        assert copied.timeout is None
-        assert isinstance(async_client.timeout, httpx.Timeout)
-
-    async def test_copy_default_headers(self) -> None:
-        client = AsyncPropraven(
-            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_headers={"X-Foo": "bar"}
-        )
-        assert client.default_headers["X-Foo"] == "bar"
-
-        # does not override the already given value when not specified
-        copied = client.copy()
-        assert copied.default_headers["X-Foo"] == "bar"
-
-        # merges already given headers
-        copied = client.copy(default_headers={"X-Bar": "stainless"})
-        assert copied.default_headers["X-Foo"] == "bar"
-        assert copied.default_headers["X-Bar"] == "stainless"
-
-        # uses new values for any already given headers
-        copied = client.copy(default_headers={"X-Foo": "stainless"})
-        assert copied.default_headers["X-Foo"] == "stainless"
-
-        # set_default_headers
-
-        # completely overrides already set values
-        copied = client.copy(set_default_headers={})
-        assert copied.default_headers.get("X-Foo") is None
-
-        copied = client.copy(set_default_headers={"X-Bar": "Robert"})
-        assert copied.default_headers["X-Bar"] == "Robert"
-
-        with pytest.raises(
-            ValueError,
-            match="`default_headers` and `set_default_headers` arguments are mutually exclusive",
-        ):
-            client.copy(set_default_headers={}, default_headers={"X-Foo": "Bar"})
-        await client.close()
-
-    async def test_copy_default_query(self) -> None:
-        client = AsyncPropraven(
-            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_query={"foo": "bar"}
-        )
-        assert _get_params(client)["foo"] == "bar"
-
-        # does not override the already given value when not specified
-        copied = client.copy()
-        assert _get_params(copied)["foo"] == "bar"
-
-        # merges already given params
-        copied = client.copy(default_query={"bar": "stainless"})
-        params = _get_params(copied)
-        assert params["foo"] == "bar"
-        assert params["bar"] == "stainless"
-
-        # uses new values for any already given headers
-        copied = client.copy(default_query={"foo": "stainless"})
-        assert _get_params(copied)["foo"] == "stainless"
-
-        # set_default_query
-
-        # completely overrides already set values
-        copied = client.copy(set_default_query={})
-        assert _get_params(copied) == {}
-
-        copied = client.copy(set_default_query={"bar": "Robert"})
-        assert _get_params(copied)["bar"] == "Robert"
-
-        with pytest.raises(
-            ValueError,
-            # TODO: update
-            match="`default_query` and `set_default_query` arguments are mutually exclusive",
-        ):
-            client.copy(set_default_query={}, default_query={"foo": "Bar"})
-
-        await client.close()
-
-    def test_copy_signature(self, async_client: AsyncPropraven) -> None:
-        # ensure the same parameters that can be passed to the client are defined in the `.copy()` method
-        init_signature = inspect.signature(
-            # mypy doesn't like that we access the `__init__` property.
-            async_client.__init__,  # type: ignore[misc]
-        )
-        copy_signature = inspect.signature(async_client.copy)
-        exclude_params = {"transport", "proxies", "_strict_response_validation"}
-
-        for name in init_signature.parameters.keys():
-            if name in exclude_params:
-                continue
-
-            copy_param = copy_signature.parameters.get(name)
-            assert copy_param is not None, f"copy() signature is missing the {name} param"
-
-    @pytest.mark.skipif(sys.version_info >= (3, 10), reason="fails because of a memory leak that started from 3.12")
-    def test_copy_build_request(self, async_client: AsyncPropraven) -> None:
-        options = FinalRequestOptions(method="get", url="/foo")
-
-        def build_request(options: FinalRequestOptions) -> None:
-            client_copy = async_client.copy()
-            client_copy._build_request(options)
-
-        # ensure that the machinery is warmed up before tracing starts.
-        build_request(options)
-        gc.collect()
-
-        tracemalloc.start(1000)
-
-        snapshot_before = tracemalloc.take_snapshot()
-
-        ITERATIONS = 10
-        for _ in range(ITERATIONS):
-            build_request(options)
-
-        gc.collect()
-        snapshot_after = tracemalloc.take_snapshot()
-
-        tracemalloc.stop()
-
-        def add_leak(leaks: list[tracemalloc.StatisticDiff], diff: tracemalloc.StatisticDiff) -> None:
-            if diff.count == 0:
-                # Avoid false positives by considering only leaks (i.e. allocations that persist).
-                return
-
-            if diff.count % ITERATIONS != 0:
-                # Avoid false positives by considering only leaks that appear per iteration.
-                return
-
-            for frame in diff.traceback:
-                if any(
-                    frame.filename.endswith(fragment)
-                    for fragment in [
-                        # to_raw_response_wrapper leaks through the @functools.wraps() decorator.
-                        #
-                        # removing the decorator fixes the leak for reasons we don't understand.
-                        "propraven/_legacy_response.py",
-                        "propraven/_response.py",
-                        # pydantic.BaseModel.model_dump || pydantic.BaseModel.dict leak memory for some reason.
-                        "propraven/_compat.py",
-                        # Standard library leaks we don't care about.
-                        "/logging/__init__.py",
-                    ]
-                ):
-                    return
-
-            leaks.append(diff)
-
-        leaks: list[tracemalloc.StatisticDiff] = []
-        for diff in snapshot_after.compare_to(snapshot_before, "traceback"):
-            add_leak(leaks, diff)
-        if leaks:
-            for leak in leaks:
-                print("MEMORY LEAK:", leak)
-                for frame in leak.traceback:
-                    print(frame)
-            raise AssertionError()
-
-    async def test_request_timeout(self, async_client: AsyncPropraven) -> None:
-        request = async_client._build_request(FinalRequestOptions(method="get", url="/foo"))
-        timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
-        assert timeout == DEFAULT_TIMEOUT
-
-        request = async_client._build_request(
-            FinalRequestOptions(method="get", url="/foo", timeout=httpx.Timeout(100.0))
-        )
-        timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
-        assert timeout == httpx.Timeout(100.0)
-
-    async def test_client_timeout_option(self) -> None:
-        client = AsyncPropraven(
-            base_url=base_url, api_key=api_key, _strict_response_validation=True, timeout=httpx.Timeout(0)
-        )
-
-        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-        timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
-        assert timeout == httpx.Timeout(0)
-
-        await client.close()
-
-    async def test_http_client_timeout_option(self) -> None:
-        # custom timeout given to the httpx client should be used
-        async with httpx.AsyncClient(timeout=None) as http_client:
-            client = AsyncPropraven(
-                base_url=base_url, api_key=api_key, _strict_response_validation=True, http_client=http_client
-            )
-
-            request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-            timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
-            assert timeout == httpx.Timeout(None)
-
-            await client.close()
-
-        # no timeout given to the httpx client should not use the httpx default
-        async with httpx.AsyncClient() as http_client:
-            client = AsyncPropraven(
-                base_url=base_url, api_key=api_key, _strict_response_validation=True, http_client=http_client
-            )
-
-            request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-            timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
-            assert timeout == DEFAULT_TIMEOUT
-
-            await client.close()
-
-        # explicitly passing the default timeout currently results in it being ignored
-        async with httpx.AsyncClient(timeout=HTTPX_DEFAULT_TIMEOUT) as http_client:
-            client = AsyncPropraven(
-                base_url=base_url, api_key=api_key, _strict_response_validation=True, http_client=http_client
-            )
-
-            request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-            timeout = httpx.Timeout(**request.extensions["timeout"])  # type: ignore
-            assert timeout == DEFAULT_TIMEOUT  # our default
-
-            await client.close()
-
-    def test_invalid_http_client(self) -> None:
-        with pytest.raises(TypeError, match="Invalid `http_client` arg"):
-            with httpx.Client() as http_client:
-                AsyncPropraven(
-                    base_url=base_url,
-                    api_key=api_key,
-                    _strict_response_validation=True,
-                    http_client=cast(Any, http_client),
-                )
-
-    async def test_default_headers_option(self) -> None:
-        test_client = AsyncPropraven(
-            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_headers={"X-Foo": "bar"}
-        )
-        request = test_client._build_request(FinalRequestOptions(method="get", url="/foo"))
-        assert request.headers.get("x-foo") == "bar"
-        assert request.headers.get("x-stainless-lang") == "python"
-
-        test_client2 = AsyncPropraven(
-            base_url=base_url,
-            api_key=api_key,
-            _strict_response_validation=True,
-            default_headers={
-                "X-Foo": "stainless",
-                "X-Stainless-Lang": "my-overriding-header",
-            },
-        )
-        request = test_client2._build_request(FinalRequestOptions(method="get", url="/foo"))
-        assert request.headers.get("x-foo") == "stainless"
-        assert request.headers.get("x-stainless-lang") == "my-overriding-header"
-
-        await test_client.close()
-        await test_client2.close()
-
-    def test_validate_headers(self) -> None:
-        client = AsyncPropraven(base_url=base_url, api_key=api_key, _strict_response_validation=True)
-        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-        assert request.headers.get("Authorization") == f"Bearer {api_key}"
-
-        with pytest.raises(PropravenError):
-            with update_env(**{"PROPRAVEN_API_KEY": Omit()}):
-                client2 = AsyncPropraven(base_url=base_url, api_key=None, _strict_response_validation=True)
-            _ = client2
-
-    async def test_default_query_option(self) -> None:
-        client = AsyncPropraven(
-            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_query={"query_param": "bar"}
-        )
-        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-        url = httpx.URL(request.url)
-        assert dict(url.params) == {"query_param": "bar"}
-
-        request = client._build_request(
-            FinalRequestOptions(
-                method="get",
-                url="/foo",
-                params={"foo": "baz", "query_param": "overridden"},
-            )
-        )
-        url = httpx.URL(request.url)
-        assert dict(url.params) == {"foo": "baz", "query_param": "overridden"}
-
-        await client.close()
-
-    async def test_hardcoded_query_params_in_url(self, async_client: AsyncPropraven) -> None:
-        request = async_client._build_request(FinalRequestOptions(method="get", url="/foo?beta=true"))
-        url = httpx.URL(request.url)
-        assert dict(url.params) == {"beta": "true"}
-
-        request = async_client._build_request(
-            FinalRequestOptions(
-                method="get",
-                url="/foo?beta=true",
-                params={"limit": "10", "page": "abc"},
-            )
-        )
-        url = httpx.URL(request.url)
-        assert dict(url.params) == {"beta": "true", "limit": "10", "page": "abc"}
-
-        request = async_client._build_request(
-            FinalRequestOptions(
-                method="get",
-                url="/files/a%2Fb?beta=true",
-                params={"limit": "10"},
-            )
-        )
-        assert request.url.raw_path == b"/files/a%2Fb?beta=true&limit=10"
-
-    def test_request_extra_json(self, client: Propraven) -> None:
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                json_data={"foo": "bar"},
-                extra_json={"baz": False},
-            ),
-        )
-        data = json.loads(request.content.decode("utf-8"))
-        assert data == {"foo": "bar", "baz": False}
-
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                extra_json={"baz": False},
-            ),
-        )
-        data = json.loads(request.content.decode("utf-8"))
-        assert data == {"baz": False}
-
-        # `extra_json` takes priority over `json_data` when keys clash
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                json_data={"foo": "bar", "baz": True},
-                extra_json={"baz": None},
-            ),
-        )
-        data = json.loads(request.content.decode("utf-8"))
-        assert data == {"foo": "bar", "baz": None}
-
-    def test_request_extra_headers(self, client: Propraven) -> None:
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                **make_request_options(extra_headers={"X-Foo": "Foo"}),
-            ),
-        )
-        assert request.headers.get("X-Foo") == "Foo"
-
-        # `extra_headers` takes priority over `default_headers` when keys clash
-        request = client.with_options(default_headers={"X-Bar": "true"})._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                **make_request_options(
-                    extra_headers={"X-Bar": "false"},
-                ),
-            ),
-        )
-        assert request.headers.get("X-Bar") == "false"
-
-    def test_request_extra_query(self, client: Propraven) -> None:
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                **make_request_options(
-                    extra_query={"my_query_param": "Foo"},
-                ),
-            ),
-        )
-        params = dict(request.url.params)
-        assert params == {"my_query_param": "Foo"}
-
-        # if both `query` and `extra_query` are given, they are merged
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                **make_request_options(
-                    query={"bar": "1"},
-                    extra_query={"foo": "2"},
-                ),
-            ),
-        )
-        params = dict(request.url.params)
-        assert params == {"bar": "1", "foo": "2"}
-
-        # `extra_query` takes priority over `query` when keys clash
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                **make_request_options(
-                    query={"foo": "1"},
-                    extra_query={"foo": "2"},
-                ),
-            ),
-        )
-        params = dict(request.url.params)
-        assert params == {"foo": "2"}
-
-    def test_multipart_repeating_array(self, async_client: AsyncPropraven) -> None:
-        request = async_client._build_request(
-            FinalRequestOptions.construct(
-                method="post",
-                url="/foo",
-                headers={"Content-Type": "multipart/form-data; boundary=6b7ba517decee4a450543ea6ae821c82"},
-                json_data={"array": ["foo", "bar"]},
-                files=[("foo.txt", b"hello world")],
-            )
-        )
-
-        assert request.read().split(b"\r\n") == [
-            b"--6b7ba517decee4a450543ea6ae821c82",
-            b'Content-Disposition: form-data; name="array[]"',
-            b"",
-            b"foo",
-            b"--6b7ba517decee4a450543ea6ae821c82",
-            b'Content-Disposition: form-data; name="array[]"',
-            b"",
-            b"bar",
-            b"--6b7ba517decee4a450543ea6ae821c82",
-            b'Content-Disposition: form-data; name="foo.txt"; filename="upload"',
-            b"Content-Type: application/octet-stream",
-            b"",
-            b"hello world",
-            b"--6b7ba517decee4a450543ea6ae821c82--",
-            b"",
-        ]
-
-    @pytest.mark.respx(base_url=base_url)
-    async def test_binary_content_upload(self, respx_mock: MockRouter, async_client: AsyncPropraven) -> None:
-        respx_mock.post("/upload").mock(side_effect=mirror_request_content)
-
-        file_content = b"Hello, this is a test file."
-
-        response = await async_client.post(
-            "/upload",
-            content=file_content,
-            cast_to=httpx.Response,
-            options={"headers": {"Content-Type": "application/octet-stream"}},
-        )
-
-        assert response.status_code == 200
-        assert response.request.headers["Content-Type"] == "application/octet-stream"
-        assert response.content == file_content
-
-    async def test_binary_content_upload_with_asynciterator(self) -> None:
-        file_content = b"Hello, this is a test file."
-        counter = Counter()
-        iterator = _make_async_iterator([file_content], counter=counter)
-
-        async def mock_handler(request: httpx.Request) -> httpx.Response:
-            assert counter.value == 0, "the request body should not have been read"
-            return httpx.Response(200, content=await request.aread())
-
-        async with AsyncPropraven(
-            base_url=base_url,
-            api_key=api_key,
-            _strict_response_validation=True,
-            http_client=httpx.AsyncClient(transport=MockTransport(handler=mock_handler)),
-        ) as client:
-            response = await client.post(
-                "/upload",
-                content=iterator,
-                cast_to=httpx.Response,
-                options={"headers": {"Content-Type": "application/octet-stream"}},
-            )
-
-            assert response.status_code == 200
-            assert response.request.headers["Content-Type"] == "application/octet-stream"
-            assert response.content == file_content
-            assert counter.value == 1
-
-    @pytest.mark.respx(base_url=base_url)
-    async def test_binary_content_upload_with_body_is_deprecated(
-        self, respx_mock: MockRouter, async_client: AsyncPropraven
-    ) -> None:
-        respx_mock.post("/upload").mock(side_effect=mirror_request_content)
-
-        file_content = b"Hello, this is a test file."
-
-        with pytest.deprecated_call(
-            match="Passing raw bytes as `body` is deprecated and will be removed in a future version. Please pass raw bytes via the `content` parameter instead."
-        ):
-            response = await async_client.post(
-                "/upload",
-                body=file_content,
-                cast_to=httpx.Response,
-                options={"headers": {"Content-Type": "application/octet-stream"}},
-            )
-
-        assert response.status_code == 200
-        assert response.request.headers["Content-Type"] == "application/octet-stream"
-        assert response.content == file_content
-
-    @pytest.mark.respx(base_url=base_url)
-    async def test_basic_union_response(self, respx_mock: MockRouter, async_client: AsyncPropraven) -> None:
-        class Model1(BaseModel):
-            name: str
-
-        class Model2(BaseModel):
-            foo: str
-
-        respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
-
-        response = await async_client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
-        assert isinstance(response, Model2)
-        assert response.foo == "bar"
-
-    @pytest.mark.respx(base_url=base_url)
-    async def test_union_response_different_types(self, respx_mock: MockRouter, async_client: AsyncPropraven) -> None:
-        """Union of objects with the same field name using a different type"""
-
-        class Model1(BaseModel):
-            foo: int
-
-        class Model2(BaseModel):
-            foo: str
-
-        respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
-
-        response = await async_client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
-        assert isinstance(response, Model2)
-        assert response.foo == "bar"
-
-        respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": 1}))
-
-        response = await async_client.get("/foo", cast_to=cast(Any, Union[Model1, Model2]))
-        assert isinstance(response, Model1)
-        assert response.foo == 1
-
-    @pytest.mark.respx(base_url=base_url)
-    async def test_non_application_json_content_type_for_json_data(
-        self, respx_mock: MockRouter, async_client: AsyncPropraven
-    ) -> None:
-        """
-        Response that sets Content-Type to something other than application/json but returns json data
-        """
-
-        class Model(BaseModel):
-            foo: int
-
-        respx_mock.get("/foo").mock(
-            return_value=httpx.Response(
-                200,
-                content=json.dumps({"foo": 2}),
-                headers={"Content-Type": "application/text"},
-            )
-        )
-
-        response = await async_client.get("/foo", cast_to=Model)
-        assert isinstance(response, Model)
-        assert response.foo == 2
-
-    async def test_base_url_setter(self) -> None:
-        client = AsyncPropraven(
-            base_url="https://example.com/from_init", api_key=api_key, _strict_response_validation=True
-        )
-        assert client.base_url == "https://example.com/from_init/"
-
-        client.base_url = "https://example.com/from_setter"  # type: ignore[assignment]
-
-        assert client.base_url == "https://example.com/from_setter/"
-
-        await client.close()
-
-    async def test_base_url_env(self) -> None:
-        with update_env(PROPRAVEN_BASE_URL="http://localhost:5000/from/env"):
-            client = AsyncPropraven(api_key=api_key, _strict_response_validation=True)
-            assert client.base_url == "http://localhost:5000/from/env/"
-
-    @pytest.mark.parametrize(
-        "client",
-        [
-            AsyncPropraven(
-                base_url="http://localhost:5000/custom/path/", api_key=api_key, _strict_response_validation=True
-            ),
-            AsyncPropraven(
-                base_url="http://localhost:5000/custom/path/",
-                api_key=api_key,
-                _strict_response_validation=True,
-                http_client=httpx.AsyncClient(),
-            ),
-        ],
-        ids=["standard", "custom http client"],
-    )
-    async def test_base_url_trailing_slash(self, client: AsyncPropraven) -> None:
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                json_data={"foo": "bar"},
-            ),
-        )
-        assert request.url == "http://localhost:5000/custom/path/foo"
-        await client.close()
-
-    @pytest.mark.parametrize(
-        "client",
-        [
-            AsyncPropraven(
-                base_url="http://localhost:5000/custom/path/", api_key=api_key, _strict_response_validation=True
-            ),
-            AsyncPropraven(
-                base_url="http://localhost:5000/custom/path/",
-                api_key=api_key,
-                _strict_response_validation=True,
-                http_client=httpx.AsyncClient(),
-            ),
-        ],
-        ids=["standard", "custom http client"],
-    )
-    async def test_base_url_no_trailing_slash(self, client: AsyncPropraven) -> None:
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="/foo",
-                json_data={"foo": "bar"},
-            ),
-        )
-        assert request.url == "http://localhost:5000/custom/path/foo"
-        await client.close()
-
-    @pytest.mark.parametrize(
-        "client",
-        [
-            AsyncPropraven(
-                base_url="http://localhost:5000/custom/path/", api_key=api_key, _strict_response_validation=True
-            ),
-            AsyncPropraven(
-                base_url="http://localhost:5000/custom/path/",
-                api_key=api_key,
-                _strict_response_validation=True,
-                http_client=httpx.AsyncClient(),
-            ),
-        ],
-        ids=["standard", "custom http client"],
-    )
-    async def test_absolute_request_url(self, client: AsyncPropraven) -> None:
-        request = client._build_request(
-            FinalRequestOptions(
-                method="post",
-                url="https://myapi.com/foo",
-                json_data={"foo": "bar"},
-            ),
-        )
-        assert request.url == "https://myapi.com/foo"
-        await client.close()
-
-    async def test_copied_client_does_not_close_http(self) -> None:
-        test_client = AsyncPropraven(base_url=base_url, api_key=api_key, _strict_response_validation=True)
-        assert not test_client.is_closed()
-
-        copied = test_client.copy()
-        assert copied is not test_client
-
-        del copied
-
-        await asyncio.sleep(0.2)
-        assert not test_client.is_closed()
-
-    async def test_client_context_manager(self) -> None:
-        test_client = AsyncPropraven(base_url=base_url, api_key=api_key, _strict_response_validation=True)
-        async with test_client as c2:
-            assert c2 is test_client
-            assert not c2.is_closed()
-            assert not test_client.is_closed()
-        assert test_client.is_closed()
-
-    @pytest.mark.respx(base_url=base_url)
-    async def test_client_response_validation_error(self, respx_mock: MockRouter, async_client: AsyncPropraven) -> None:
-        class Model(BaseModel):
-            foo: str
-
-        respx_mock.get("/foo").mock(return_value=httpx.Response(200, json={"foo": {"invalid": True}}))
-
-        with pytest.raises(APIResponseValidationError) as exc:
-            await async_client.get("/foo", cast_to=Model)
-
-        assert isinstance(exc.value.__cause__, ValidationError)
-
-    async def test_client_max_retries_validation(self) -> None:
-        with pytest.raises(TypeError, match=r"max_retries cannot be None"):
-            AsyncPropraven(
-                base_url=base_url, api_key=api_key, _strict_response_validation=True, max_retries=cast(Any, None)
-            )
-
-    @pytest.mark.respx(base_url=base_url)
-    async def test_received_text_for_expected_json(self, respx_mock: MockRouter) -> None:
-        class Model(BaseModel):
-            name: str
-
-        respx_mock.get("/foo").mock(return_value=httpx.Response(200, text="my-custom-format"))
-
-        strict_client = AsyncPropraven(base_url=base_url, api_key=api_key, _strict_response_validation=True)
-
-        with pytest.raises(APIResponseValidationError):
-            await strict_client.get("/foo", cast_to=Model)
-
-        non_strict_client = AsyncPropraven(base_url=base_url, api_key=api_key, _strict_response_validation=False)
-
-        response = await non_strict_client.get("/foo", cast_to=Model)
-        assert isinstance(response, str)  # type: ignore[unreachable]
-
-        await strict_client.close()
-        await non_strict_client.close()
-
-    @pytest.mark.parametrize(
-        "remaining_retries,retry_after,timeout",
-        [
-            [3, "20", 20],
-            [3, "0", 0.5],
-            [3, "-10", 0.5],
-            [3, "60", 60],
-            [3, "61", 0.5],
-            [3, "Fri, 29 Sep 2023 16:26:57 GMT", 20],
-            [3, "Fri, 29 Sep 2023 16:26:37 GMT", 0.5],
-            [3, "Fri, 29 Sep 2023 16:26:27 GMT", 0.5],
-            [3, "Fri, 29 Sep 2023 16:27:37 GMT", 60],
-            [3, "Fri, 29 Sep 2023 16:27:38 GMT", 0.5],
-            [3, "99999999999999999999999999999999999", 0.5],
-            [3, "Zun, 29 Sep 2023 16:26:27 GMT", 0.5],
-            [3, "", 0.5],
-            [2, "", 0.5 * 2.0],
-            [1, "", 0.5 * 4.0],
-            [-1100, "", 8],  # test large number potentially overflowing
-        ],
-    )
-    @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
-    async def test_parse_retry_after_header(
-        self, remaining_retries: int, retry_after: str, timeout: float, async_client: AsyncPropraven
-    ) -> None:
-        headers = httpx.Headers({"retry-after": retry_after})
-        options = FinalRequestOptions(method="get", url="/foo", max_retries=3)
-        calculated = async_client._calculate_retry_timeout(remaining_retries, options, headers)
-        assert calculated == pytest.approx(timeout, 0.5 * 0.875)  # pyright: ignore[reportUnknownMemberType]
-
-    @mock.patch("propraven._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
-    @pytest.mark.respx(base_url=base_url)
-    async def test_retrying_timeout_errors_doesnt_leak(
-        self, respx_mock: MockRouter, async_client: AsyncPropraven
-    ) -> None:
-        respx_mock.get("/api/v1/parcels/37183:0012345").mock(side_effect=httpx.TimeoutException("Test timeout error"))
-
-        with pytest.raises(APITimeoutError):
-            await async_client.v1.parcels.with_streaming_response.retrieve("37183:0012345").__aenter__()
-
-        assert _get_open_connections(async_client) == 0
-
-    @mock.patch("propraven._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
-    @pytest.mark.respx(base_url=base_url)
-    async def test_retrying_status_errors_doesnt_leak(
-        self, respx_mock: MockRouter, async_client: AsyncPropraven
-    ) -> None:
-        respx_mock.get("/api/v1/parcels/37183:0012345").mock(return_value=httpx.Response(500))
-
-        with pytest.raises(APIStatusError):
-            await async_client.v1.parcels.with_streaming_response.retrieve("37183:0012345").__aenter__()
-        assert _get_open_connections(async_client) == 0
-
-    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
-    @mock.patch("propraven._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
-    @pytest.mark.respx(base_url=base_url)
-    @pytest.mark.parametrize("failure_mode", ["status", "exception"])
-    async def test_retries_taken(
-        self,
-        async_client: AsyncPropraven,
-        failures_before_success: int,
-        failure_mode: Literal["status", "exception"],
-        respx_mock: MockRouter,
-    ) -> None:
-        client = async_client.with_options(max_retries=4)
-
-        nb_retries = 0
-
-        def retry_handler(_request: httpx.Request) -> httpx.Response:
-            nonlocal nb_retries
-            if nb_retries < failures_before_success:
-                nb_retries += 1
-                if failure_mode == "exception":
-                    raise RuntimeError("oops")
-                return httpx.Response(500)
-            return httpx.Response(200)
-
-        respx_mock.get("/api/v1/parcels/37183:0012345").mock(side_effect=retry_handler)
-
-        response = await client.v1.parcels.with_raw_response.retrieve("37183:0012345")
-
-        assert response.retries_taken == failures_before_success
-        assert int(response.http_request.headers.get("x-stainless-retry-count")) == failures_before_success
-
-    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
-    @mock.patch("propraven._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
-    @pytest.mark.respx(base_url=base_url)
-    async def test_omit_retry_count_header(
-        self, async_client: AsyncPropraven, failures_before_success: int, respx_mock: MockRouter
-    ) -> None:
-        client = async_client.with_options(max_retries=4)
-
-        nb_retries = 0
-
-        def retry_handler(_request: httpx.Request) -> httpx.Response:
-            nonlocal nb_retries
-            if nb_retries < failures_before_success:
-                nb_retries += 1
-                return httpx.Response(500)
-            return httpx.Response(200)
-
-        respx_mock.get("/api/v1/parcels/37183:0012345").mock(side_effect=retry_handler)
-
-        response = await client.v1.parcels.with_raw_response.retrieve(
-            "37183:0012345", extra_headers={"x-stainless-retry-count": Omit()}
-        )
-
-        assert len(response.http_request.headers.get_list("x-stainless-retry-count")) == 0
-
-    @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
-    @mock.patch("propraven._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
-    @pytest.mark.respx(base_url=base_url)
-    async def test_overwrite_retry_count_header(
-        self, async_client: AsyncPropraven, failures_before_success: int, respx_mock: MockRouter
-    ) -> None:
-        client = async_client.with_options(max_retries=4)
-
-        nb_retries = 0
-
-        def retry_handler(_request: httpx.Request) -> httpx.Response:
-            nonlocal nb_retries
-            if nb_retries < failures_before_success:
-                nb_retries += 1
-                return httpx.Response(500)
-            return httpx.Response(200)
-
-        respx_mock.get("/api/v1/parcels/37183:0012345").mock(side_effect=retry_handler)
-
-        response = await client.v1.parcels.with_raw_response.retrieve(
-            "37183:0012345", extra_headers={"x-stainless-retry-count": "42"}
-        )
-
-        assert response.http_request.headers.get("x-stainless-retry-count") == "42"
-
-    async def test_get_platform(self) -> None:
-        platform = await asyncify(get_platform)()
-        assert isinstance(platform, (str, OtherPlatform))
-
-    async def test_proxy_environment_variables(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        # Test that the proxy environment variables are set correctly
-        monkeypatch.setenv("HTTPS_PROXY", "https://example.org")
-        # Delete in case our environment has any proxy env vars set
-        monkeypatch.delenv("HTTP_PROXY", raising=False)
-        monkeypatch.delenv("ALL_PROXY", raising=False)
-        monkeypatch.delenv("NO_PROXY", raising=False)
-        monkeypatch.delenv("http_proxy", raising=False)
-        monkeypatch.delenv("https_proxy", raising=False)
-        monkeypatch.delenv("all_proxy", raising=False)
-        monkeypatch.delenv("no_proxy", raising=False)
-
-        client = DefaultAsyncHttpxClient()
-
-        mounts = tuple(client._mounts.items())
-        assert len(mounts) == 1
-        assert mounts[0][0].pattern == "https://"
-
-    @pytest.mark.filterwarnings("ignore:.*deprecated.*:DeprecationWarning")
-    async def test_default_client_creation(self) -> None:
-        # Ensure that the client can be initialized without any exceptions
-        DefaultAsyncHttpxClient(
-            verify=True,
-            cert=None,
-            trust_env=True,
-            http1=True,
-            http2=False,
-            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
-        )
-
-    @pytest.mark.respx(base_url=base_url)
-    async def test_follow_redirects(self, respx_mock: MockRouter, async_client: AsyncPropraven) -> None:
-        # Test that the default follow_redirects=True allows following redirects
-        respx_mock.post("/redirect").mock(
-            return_value=httpx.Response(302, headers={"Location": f"{base_url}/redirected"})
-        )
-        respx_mock.get("/redirected").mock(return_value=httpx.Response(200, json={"status": "ok"}))
-
-        response = await async_client.post("/redirect", body={"key": "value"}, cast_to=httpx.Response)
-        assert response.status_code == 200
-        assert response.json() == {"status": "ok"}
-
-    @pytest.mark.respx(base_url=base_url)
-    async def test_follow_redirects_disabled(self, respx_mock: MockRouter, async_client: AsyncPropraven) -> None:
-        # Test that follow_redirects=False prevents following redirects
-        respx_mock.post("/redirect").mock(
-            return_value=httpx.Response(302, headers={"Location": f"{base_url}/redirected"})
-        )
-
-        with pytest.raises(APIStatusError) as exc_info:
-            await async_client.post(
-                "/redirect", body={"key": "value"}, options={"follow_redirects": False}, cast_to=httpx.Response
-            )
-
-        assert exc_info.value.response.status_code == 302
-        assert exc_info.value.response.headers["Location"] == f"{base_url}/redirected"
+async def test_async_context_manager() -> None:
+    async with AsyncPropRaven(api_key="pz_x") as c:
+        assert isinstance(c, AsyncPropRaven)
