@@ -1,402 +1,291 @@
-# Propraven Python API library
+# PropRaven Python SDK
 
-<!-- prettier-ignore -->
-[![PyPI version](https://img.shields.io/pypi/v/propraven.svg?label=pypi%20(stable))](https://pypi.org/project/propraven/)
+[![PyPI version](https://img.shields.io/pypi/v/propraven.svg)](https://pypi.org/project/propraven/)
 
-The Propraven Python library provides convenient access to the Propraven REST API from any Python 3.9+
-application. The library includes type definitions for all request params and response fields,
-and offers both synchronous and asynchronous clients powered by [httpx](https://github.com/encode/httpx).
+The official Python client for the [PropRaven](https://propraven.com) property-intelligence API:
+US parcels with ownership, valuation, permits, deeds, risk and market data.
 
-It is generated with [Stainless](https://www.stainless.com/).
+- Sync (`PropRaven`) and async (`AsyncPropRaven`) clients, Python 3.9+.
+- One runtime dependency: [`httpx`](https://www.python-httpx.org/).
+- Every response is typed as a `TypedDict` (plain `dict`s at runtime, no validation step).
+- Automatic retries with `Retry-After` support, typed RFC 7807 errors, auto-pagination and
+  webhook signature verification.
 
-## Documentation
-
-The REST API documentation can be found on [propraven.com](https://propraven.com/docs). The full API of this library can be found in [api.md](api.md).
-
-PropRaven developer hub: [propraven.com/developers](https://propraven.com/developers) · Hosted MCP server: [propraven.com/docs/mcp](https://propraven.com/docs/mcp) · REST API v1 reference: [propraven.com/docs/v1](https://propraven.com/docs/v1).
+Documentation: [developer hub](https://propraven.com/developers) ·
+[REST API v1 reference](https://propraven.com/docs/v1) ·
+[hosted MCP server](https://propraven.com/docs/mcp)
 
 ## Installation
 
 ```sh
-# install from PyPI
 pip install propraven
 ```
 
-## Usage
-
-The full API of this library can be found in [api.md](api.md).
+## Quick start
 
 ```python
-import os
-from propraven import Propraven
+from propraven import PropRaven
 
-client = Propraven(
-    api_key=os.environ.get("PROPRAVEN_API_KEY"),  # This is the default and can be omitted
-)
+client = PropRaven()  # reads PROPRAVEN_API_KEY from the environment
 
-parcel = client.v1.parcels.retrieve(
-    "REPLACE_ME",
+parcel = client.parcels.get("37:119:12104406")
+print(parcel.get("address"), parcel.get("owner_name"))
+
+page = client.search.parcels(
+    bounds={"north": 35.215, "south": 35.205, "east": -80.855, "west": -80.865},
+    filters={"valueRange": {"min": 100_000}},
+    limit=50,
 )
-print(parcel.parcel_id)
+print(page["total"], len(page["data"]))
 ```
 
-While you can provide an `api_key` keyword argument,
-we recommend using [python-dotenv](https://pypi.org/project/python-dotenv/)
-to add `PROPRAVEN_API_KEY="My API Key"` to your `.env` file
-so that your API Key is not stored in source control.
+Methods mirror the API: `client.<namespace>.<method>(path_params..., **params)`. Path parameters are
+positional; query parameters, header parameters and JSON body fields are keyword arguments with
+their wire names (`county_fips`, `min_value`, ...). A keyword left as `None` is not sent. Every method
+also accepts `extra_headers`, `extra_query`, `extra_body` (body endpoints), `timeout` and
+`max_retries`.
 
-## Async usage
-
-Simply import `AsyncPropraven` instead of `Propraven` and use `await` with each API call:
+### Async
 
 ```python
-import os
 import asyncio
-from propraven import AsyncPropraven
-
-client = AsyncPropraven(
-    api_key=os.environ.get("PROPRAVEN_API_KEY"),  # This is the default and can be omitted
-)
+from propraven import AsyncPropRaven
 
 
 async def main() -> None:
-    parcel = await client.v1.parcels.retrieve(
-        "REPLACE_ME",
-    )
-    print(parcel.parcel_id)
+    async with AsyncPropRaven() as client:
+        usage = await client.account.usage()
+        async for row in client.deals.absentee_iter(county_fips="37119", max_items=100):
+            print(row.get("parcel_id"))
 
 
 asyncio.run(main())
 ```
 
-Functionality between the synchronous and asynchronous clients is otherwise identical.
+## Authentication
 
-### With aiohttp
+Pass `api_key="pz_..."` or set `PROPRAVEN_API_KEY`. The key is sent as `Authorization: Bearer <key>`.
+Keys start with `pz_`; the client warns (but still sends the request) when a key does not.
+The key is optional: key-optional endpoints work anonymously (100 calls a day per IP), and endpoints
+that need a key answer `401`, raised as `AuthenticationError`.
 
-By default, the async client uses `httpx` for HTTP requests. However, for improved concurrency performance you may also use `aiohttp` as the HTTP backend.
+**Server-side only.** API keys are secrets and the REST API sends no CORS headers, so use this SDK
+from servers, scripts and notebooks, never from code shipped to browsers or end-user devices.
 
-You can enable this by installing `aiohttp`:
-
-```sh
-# install from PyPI
-pip install propraven[aiohttp]
-```
-
-Then you can enable it by instantiating the client with `http_client=DefaultAioHttpClient()`:
+## Configuration
 
 ```python
-import os
-import asyncio
-from propraven import DefaultAioHttpClient
-from propraven import AsyncPropraven
-
-
-async def main() -> None:
-    async with AsyncPropraven(
-        api_key=os.environ.get("PROPRAVEN_API_KEY"),  # This is the default and can be omitted
-        http_client=DefaultAioHttpClient(),
-    ) as client:
-        parcel = await client.v1.parcels.retrieve(
-            "REPLACE_ME",
-        )
-        print(parcel.parcel_id)
-
-
-asyncio.run(main())
-```
-
-## Using types
-
-Nested request parameters are [TypedDicts](https://docs.python.org/3/library/typing.html#typing.TypedDict). Responses are [Pydantic models](https://docs.pydantic.dev) which also provide helper methods for things like:
-
-- Serializing back into JSON, `model.to_json()`
-- Converting to a dictionary, `model.to_dict()`
-
-Typed requests and responses provide autocomplete and documentation within your editor. If you would like to see type errors in VS Code to help catch bugs earlier, set `python.analysis.typeCheckingMode` to `basic`.
-
-## Nested params
-
-Nested parameters are dictionaries, typed using `TypedDict`, for example:
-
-```python
-from propraven import Propraven
-
-client = Propraven()
-
-response = client.v1.search.parcel_search(
-    bounds={
-        "east": -78.55,
-        "north": 35.85,
-        "south": 35.75,
-        "west": -78.7,
-    },
+client = PropRaven(
+    api_key="pz_...",                  # default: PROPRAVEN_API_KEY
+    base_url="https://propraven.com",  # default: PROPRAVEN_BASE_URL or https://propraven.com
+    timeout=60.0,                      # seconds or an httpx.Timeout; per request: timeout=...
+    max_retries=2,                     # per request: max_retries=...
+    default_headers={"X-Team": "ops"},
+    http_client=None,                  # bring your own httpx.Client / httpx.AsyncClient
 )
-print(response.bounds)
 ```
 
-## Handling errors
+`client.request("GET", "/api/v1/freshness")` calls any endpoint directly with the same auth, retries
+and error handling.
 
-When the library is unable to connect to the API (for example, due to network connection problems or a timeout), a subclass of `propraven.APIConnectionError` is raised.
+## Errors
 
-When the API returns a non-success status code (that is, 4xx or 5xx
-response), a subclass of `propraven.APIStatusError` is raised, containing `status_code` and `response` properties.
+Error responses are RFC 7807 problem documents. Each status maps to an exception class, all
+subclasses of `propraven.APIError` (itself a `propraven.PropRavenError`):
 
-All errors inherit from `propraven.APIError`.
+| Status | Exception |
+| --- | --- |
+| 400 | `BadRequestError` |
+| 401 | `AuthenticationError` |
+| 402 | `PaymentRequiredError` (`.accepts` holds x402 payment requirements, else `[]`) |
+| 403 | `PermissionDeniedError` |
+| 404 | `NotFoundError` |
+| 405 | `MethodNotAllowedError` |
+| 409 | `ConflictError` |
+| 413 | `PayloadTooLargeError` |
+| 422 | `UnprocessableEntityError` |
+| 429 | `RateLimitError` (`.retry_after` in seconds, or `None`) |
+| 503 | `ServiceUnavailableError` |
+| 504 | `GatewayTimeoutError` |
+| other 5xx | `InternalServerError` |
+
+Every `APIError` has `status`, `type`, `title`, `detail`, `code`, `errors` (a list of
+`{param, message}`), `request_id`, `headers` and `body`; `str(err)` is `"<status> <code>: <detail>"`.
+Network failures raise `APIConnectionError`, and timeouts raise its subclass `APITimeoutError`.
 
 ```python
 import propraven
-from propraven import Propraven
-
-client = Propraven()
 
 try:
-    client.v1.parcels.retrieve(
-        "REPLACE_ME",
-    )
-except propraven.APIConnectionError as e:
-    print("The server could not be reached")
-    print(e.__cause__)  # an underlying Exception, likely raised within httpx.
-except propraven.RateLimitError as e:
-    print("A 429 status code was received; we should back off a bit.")
-except propraven.APIStatusError as e:
-    print("Another non-200-range status code was received")
-    print(e.status_code)
-    print(e.response)
+    client.deals.absentee(county_fips="37119", limit=0)
+except propraven.BadRequestError as err:
+    print(err.code, err.errors)  # invalid_parameter [{'param': 'limit', 'message': ...}]
+except propraven.RateLimitError as err:
+    print("retry in", err.retry_after)
+except propraven.APIError as err:
+    print(err.status, err.detail, err.request_id)
 ```
 
-Error codes are as follows:
+The SDK never signs x402 payments; a paid resource without payment raises `PaymentRequiredError`.
 
-| Status Code | Error Type                 |
-| ----------- | -------------------------- |
-| 400         | `BadRequestError`          |
-| 401         | `AuthenticationError`      |
-| 403         | `PermissionDeniedError`    |
-| 404         | `NotFoundError`            |
-| 422         | `UnprocessableEntityError` |
-| 429         | `RateLimitError`           |
-| >=500       | `InternalServerError`      |
-| N/A         | `APIConnectionError`       |
+## Retries
 
-### Retries
+Requests are retried up to `max_retries` times (default 2) on network errors and timeouts and on
+429, 503 and 504 for every HTTP method. Other 5xx responses are retried only for GET, HEAD, DELETE
+and OPTIONS. Other 4xx responses are never retried, 402 included.
 
-Certain errors are automatically retried 2 times by default, with a short exponential backoff.
-Connection errors (for example, due to a network connectivity problem), 408 Request Timeout, 409 Conflict,
-429 Rate Limit, and >=500 Internal errors are all retried by default.
+The wait is `Retry-After` (seconds or an HTTP date) when present. Without it, the client waits until
+`X-RateLimit-Reset` when `X-RateLimit-Remaining` is `0`, and otherwise backs off exponentially
+(0.5 s × 2^attempt, ±25 % jitter). One wait is capped at 60 s: if the server asks for longer
+(a monthly cap's `Retry-After` is measured in days), the error is raised at once.
 
-You can use the `max_retries` option to configure or disable retry settings:
+## Pagination
+
+Every paginated method `m` has an auto-paginating sibling `m_iter` (a generator, or an async generator
+on `AsyncPropRaven`) that fetches pages on demand:
 
 ```python
-from propraven import Propraven
+for parcel in client.deals.absentee_iter(county_fips="37119", page_size=100, max_items=1000):
+    ...
 
-# Configure the default for all requests:
-client = Propraven(
-    # default is 2
-    max_retries=0,
-)
-
-# Or, configure per-request:
-client.with_options(max_retries=5).v1.parcels.retrieve(
-    "REPLACE_ME",
-)
+for hit in client.search.full_iter(q="main st", page_size=50):  # cursor-paginated
+    ...
 ```
 
-### Timeouts
+Offset pagination advances `offset` by the page length. It stops on a short or empty page, when
+`offset >= total`, or when `has_more` is false. Cursor pagination (`search.full`) passes
+`after=<nextCursor>` until `nextCursor` is null or absent, or `hasMore` is false. `page_size` is sent as
+`limit`, and `max_items` caps the number of items returned.
 
-By default requests time out after 1 minute. You can configure this with a `timeout` option,
-which accepts a float or an [`httpx.Timeout`](https://www.python-httpx.org/advanced/timeouts/#fine-tuning-the-configuration) object:
+## Webhooks
+
+Verify deliveries with the raw request body and the `X-PropRaven-Signature` header
+(`t=<unix_ms>,v1=<hex hmac-sha256>`, signed over `"<t>.<raw body>"` with your `whsec_...` secret):
 
 ```python
-from propraven import Propraven
+from propraven import WebhookVerificationError
+from propraven.webhooks import verify
 
-# Configure the default for all requests:
-client = Propraven(
-    # 20 seconds (default is 1 minute)
-    timeout=20.0,
-)
-
-# More granular control:
-client = Propraven(
-    timeout=httpx.Timeout(60.0, read=5.0, write=10.0, connect=2.0),
-)
-
-# Override per-request:
-client.with_options(timeout=5.0).v1.parcels.retrieve(
-    "REPLACE_ME",
-)
+try:
+    event = verify(raw_body, headers["X-PropRaven-Signature"], secret)  # tolerance=300 s
+except WebhookVerificationError:
+    return 400
+print(event["type"])
 ```
 
-On timeout, an `APITimeoutError` is thrown.
+`propraven.verify_webhook` is an alias. Multiple `v1=` signatures are accepted (secret rotation), and
+signatures are compared in constant time.
 
-Note that requests that time out are [retried twice by default](#retries).
+## Rate-limit info
 
-## Advanced
+`client.last_rate_limit` holds the `X-RateLimit-Limit` / `-Remaining` / `-Reset` headers of the most
+recent response as a `RateLimit(limit, remaining, reset)` (reset is a Unix epoch in seconds), or `None`
+when that response had none.
 
-### Logging
+## Types
 
-We use the standard library [`logging`](https://docs.python.org/3/library/logging.html) module.
+Response and request shapes live in `propraven.types`, one `TypedDict` per schema in the OpenAPI spec,
+plus `<Namespace><Method>Response` for every operation (`ParcelsPermitsResponse`,
+`SearchParcelsResponse`, ...). They are plain dicts at runtime, so unknown keys pass through
+untouched. Numeric fields are typed as numbers, and identifiers (`parcel_id`, `apn`, `county_fips`,
+`state_fips`, `zip`) as strings. Responses that are CSV (`search.export`) are returned as `str`.
 
-You can enable logging by setting the environment variable `PROPRAVEN_LOG` to `info`.
+## Methods
 
-```shell
-$ export PROPRAVEN_LOG=info
+<!-- BEGIN GENERATED METHODS (scripts/generate.py) -->
+
+70 operations. Every method exists on both `PropRaven` and `AsyncPropRaven`; methods marked *iter* also have an auto-paginating `<method>_iter(...)` sibling.
+
+| Method | HTTP | Summary |
+| --- | --- | --- |
+| `client.parcels.assessment_history(id)` | `GET /api/v1/parcels/{id}/assessment-history` | Get recorded annual assessment history |
+| `client.parcels.get(id)` | `GET /api/v1/parcels/{id}` | Get parcel by ID |
+| `client.parcels.owner(id)` | `GET /api/v1/parcels/{id}/owner` | Get parcel owner details and portfolio |
+| `client.parcels.permits(id)` | `GET /api/v1/parcels/{id}/permits` | Get parcel permits |
+| `client.parcels.deeds(id)` | `GET /api/v1/parcels/{id}/deeds` | Get parcel deed history |
+| `client.parcels.risks(id)` | `GET /api/v1/parcels/{id}/risks` | Get parcel risk assessment |
+| `client.parcels.geojson()` | `GET /api/v1/parcels/geojson` | Parcel polygons as GeoJSON for a bounding box |
+| `client.parcels.report(id)` | `GET /api/v1/parcels/{id}/report` | Parcel dossier (paid, provenance-first) |
+| `client.parcels.comp_pack(id)` | `GET /api/v1/parcels/{id}/comp-pack` | Comp pack (paid, priced per pack) — with a FREE preview |
+| `client.parcels.risk_score(id)` | `GET /api/v1/parcels/{id}/risk-score` | Risk score (paid, priced per assessment) — with a FREE preview |
+| `client.parcels.traffic_history(id)` | `GET /api/v1/parcels/{id}/traffic-history` | Nearest traffic station + AADT history |
+| `client.parcels.batch()` | `POST /api/v1/parcels/batch` | Fetch up to 100 parcels by (state, county, parcel) tuple |
+| `client.parcels.comps(id)` | `GET /api/v1/parcels/{id}/comps` | Comparable sales for a parcel |
+| `client.parcels.occupants(id)` | `GET /api/v1/parcels/{id}/occupants` | Business occupants of a parcel |
+| `client.parcels.violations(id)` | `GET /api/v1/parcels/{id}/violations` | Code violations on a parcel |
+| `client.parcels.pois()` | `GET /api/v1/parcels/poi` | Business parcels in a small bounding box |
+| `client.search.parcels()` (*iter*) | `POST /api/v1/search` | Search parcels |
+| `client.search.autocomplete()` | `GET /api/v1/search/autocomplete` | Address / place / parcel autocomplete |
+| `client.search.export()` | `GET /api/v1/search/export` | Export search results as CSV |
+| `client.search.full()` (*iter*) | `GET /api/v1/search/full` | Full paginated text + attribute search |
+| `client.coverage.get()` | `GET /api/v1/coverage` | Get coverage statistics |
+| `client.coverage.map()` | `GET /api/v1/coverage/map` | County coverage map data |
+| `client.deals.absentee()` (*iter*) | `GET /api/v1/deals/absentee` | Find absentee owners |
+| `client.deals.flips()` (*iter*) | `GET /api/v1/deals/flips` | Find property flips |
+| `client.deals.contractors()` (*iter*) | `GET /api/v1/deals/contractors` | Search contractors by permit activity |
+| `client.deals.entities()` (*iter*) | `GET /api/v1/deals/entities` | Find entity-owned parcels (LLC, Corp, Trust, LP) |
+| `client.deals.high_land_ratio()` (*iter*) | `GET /api/v1/deals/high-land-ratio` | Find parcels with high land-to-improvement ratio |
+| `client.deals.lenders()` (*iter*) | `GET /api/v1/deals/lenders` | Search lender profiles |
+| `client.deals.long_hold()` (*iter*) | `GET /api/v1/deals/long-hold` | Find long-held parcels (10+ years) |
+| `client.deals.market()` (*iter*) | `GET /api/v1/deals/market` | County-quarter transaction summary or affordability index |
+| `client.deals.portfolio_owners()` (*iter*) | `GET /api/v1/deals/portfolio-owners` | Find portfolio investors (owners of 2+ properties) |
+| `client.market.counties()` (*iter*) | `GET /api/v1/market/counties` | Get county market statistics |
+| `client.market.trends()` | `GET /api/v1/market/trends` | Get market trends |
+| `client.market.county(fips)` | `GET /api/v1/market/counties/{fips}` | Detailed view for a single county |
+| `client.market.flips()` (*iter*) | `GET /api/v1/market/flips` | Flip-activity summary grouped by county |
+| `client.market.snapshot()` | `GET /api/v1/market/snapshot` | Market snapshot for a geography |
+| `client.owners.search()` | `GET /api/v1/owners/search` | Search property owners |
+| `client.owners.get(name)` | `GET /api/v1/owners/{name}` | Get owner profile |
+| `client.owners.properties(name)` (*iter*) | `GET /api/v1/owners/{name}/properties` | Get owner's properties |
+| `client.owners.portfolio(name)` | `GET /api/v1/owners/{name}/portfolio` | Get owner portfolio summary |
+| `client.owners.report(name)` | `GET /api/v1/owners/{name}/report` | Owner intelligence report (paid, priced per resolution; account required) — with a free preview |
+| `client.owners.transactions(name)` | `GET /api/v1/owners/{name}/transactions` | Recorded deed transactions for an owner |
+| `client.owners.card()` | `GET /api/v1/owners/card` | Owner card -- the owner of record and their mailing contact (account required) |
+| `client.webhooks.list()` | `GET /api/v1/webhooks` | List webhook endpoints |
+| `client.webhooks.create()` | `POST /api/v1/webhooks` | Create a webhook endpoint |
+| `client.webhooks.get(id)` | `GET /api/v1/webhooks/{id}` | Get a single webhook endpoint |
+| `client.webhooks.delete(id)` | `DELETE /api/v1/webhooks/{id}` | Soft-disable a webhook endpoint |
+| `client.webhooks.deliveries(id)` | `GET /api/v1/webhooks/{id}/deliveries` | Recent delivery attempts for a webhook |
+| `client.webhooks.retry_delivery(id, delivery_id)` | `POST /api/v1/webhooks/{id}/deliveries/{deliveryId}/retry` | Re-queue a failed webhook delivery |
+| `client.account.usage()` | `GET /api/v1/account/usage` | Current-period usage and quota |
+| `client.storefront.catalog()` | `GET /api/v1/storefront/catalog` | Machine Storefront — sealed field catalog |
+| `client.storefront.availability()` | `GET /api/v1/storefront/availability` | Machine Storefront -- try-before-buy (jurisdiction coverage or per-parcel quote) |
+| `client.leads.find()` | `GET /api/v1/leads/find` | Lead feed (paid, priced per lead) — with a FREE preview |
+| `client.credits.topup()` | `GET /api/v1/storefront/credits/topup` | Fund a prepaid credit balance over x402 |
+| `client.credits.balance()` | `GET /api/v1/storefront/credits/balance` | Read a prepaid credit balance + ledger |
+| `client.watch.list()` | `GET /api/v1/watch` | List your watches |
+| `client.watch.create()` | `POST /api/v1/watch` | Create a watch (free) |
+| `client.watch.poll(id)` | `GET /api/v1/watch/{id}` | Poll a watch for new changes (priced per delta) |
+| `client.watch.delete(id)` | `DELETE /api/v1/watch/{id}` | Delete a watch |
+| `client.verify.get()` | `GET /api/v1/verify` | Verify facts for one parcel |
+| `client.verify.batch()` | `POST /api/v1/verify` | Verify facts (batch, paid per lookup) - FREE preview |
+| `client.cohorts.export(id)` | `GET /api/v1/cohorts/{id}/export` | Mail-merge export of one of your lists (account required; included for subscribers, per row otherwise) |
+| `client.cohorts.list()` | `GET /api/v1/cohorts` | List your saved parcel lists (cohorts) |
+| `client.lookup.get()` | `GET /api/v1/lookup` | Exact parcel lookup (UUID or APN) |
+| `client.lookup.batch()` | `POST /api/v1/lookup/batch` | Resolve up to 500 parcel queries in one call |
+| `client.cmbs.exposure()` | `GET /api/v1/cmbs/exposure` | CMBS loan exposure for a parcel or an owner |
+| `client.freshness.get()` | `GET /api/v1/freshness` | How fresh the served parcel snapshot is |
+| `client.freshness.datasets()` | `GET /api/v1/freshness/datasets` | Per-dataset availability and freshness |
+| `client.crime.lookup()` | `GET /api/v1/crime/lookup` | Crime score near a point |
+| `client.traffic.stations()` | `GET /api/v1/traffic/stations` | Traffic count stations in a bounding box |
+
+<!-- END GENERATED METHODS -->
+
+## Regenerating
+
+The typed layer (`src/propraven/types`, `src/propraven/resources`, the table above) is generated from
+`openapi.json`:
+
+```sh
+curl -fsSL https://propraven.com/openapi.json -o openapi.json   # or copy a new spec in
+python scripts/generate.py                                      # standard library only
+python -m pytest -q
 ```
 
-Or to `debug` for more verbose logging.
+`python scripts/generate.py --check` fails when the generated files are stale. The
+`Regenerate from OpenAPI` workflow does this daily and opens a `spec-sync` pull request when the
+published spec changes.
 
-### How to tell whether `None` means `null` or missing
+## License
 
-In an API response, a field may be explicitly `null`, or missing entirely; in either case, its value is `None` in this library. You can differentiate the two cases with `.model_fields_set`:
-
-```py
-if response.my_field is None:
-  if 'my_field' not in response.model_fields_set:
-    print('Got json like {}, without a "my_field" key present at all.')
-  else:
-    print('Got json like {"my_field": null}.')
-```
-
-### Accessing raw response data (e.g. headers)
-
-The "raw" Response object can be accessed by prefixing `.with_raw_response.` to any HTTP method call, e.g.,
-
-```py
-from propraven import Propraven
-
-client = Propraven()
-response = client.v1.parcels.with_raw_response.retrieve(
-    "REPLACE_ME",
-)
-print(response.headers.get('X-My-Header'))
-
-parcel = response.parse()  # get the object that `v1.parcels.retrieve()` would have returned
-print(parcel.parcel_id)
-```
-
-These methods return an [`APIResponse`](https://github.com/jdw2111/propraven-python/tree/main/src/propraven/_response.py) object.
-
-The async client returns an [`AsyncAPIResponse`](https://github.com/jdw2111/propraven-python/tree/main/src/propraven/_response.py) with the same structure, the only difference being `await`able methods for reading the response content.
-
-#### `.with_streaming_response`
-
-The above interface eagerly reads the full response body when you make the request, which may not always be what you want.
-
-To stream the response body, use `.with_streaming_response` instead, which requires a context manager and only reads the response body once you call `.read()`, `.text()`, `.json()`, `.iter_bytes()`, `.iter_text()`, `.iter_lines()` or `.parse()`. In the async client, these are async methods.
-
-```python
-with client.v1.parcels.with_streaming_response.retrieve(
-    "REPLACE_ME",
-) as response:
-    print(response.headers.get("X-My-Header"))
-
-    for line in response.iter_lines():
-        print(line)
-```
-
-The context manager is required so that the response will reliably be closed.
-
-### Making custom/undocumented requests
-
-This library is typed for convenient access to the documented API.
-
-If you need to access undocumented endpoints, params, or response properties, the library can still be used.
-
-#### Undocumented endpoints
-
-To make requests to undocumented endpoints, you can make requests using `client.get`, `client.post`, and other
-http verbs. Options on the client will be respected (such as retries) when making this request.
-
-```py
-import httpx
-
-response = client.post(
-    "/foo",
-    cast_to=httpx.Response,
-    body={"my_param": True},
-)
-
-print(response.headers.get("x-foo"))
-```
-
-#### Undocumented request params
-
-If you want to explicitly send an extra param, you can do so with the `extra_query`, `extra_body`, and `extra_headers` request
-options.
-
-#### Undocumented response properties
-
-To access undocumented response properties, you can access the extra fields like `response.unknown_prop`. You
-can also get all the extra fields on the Pydantic model as a dict with
-[`response.model_extra`](https://docs.pydantic.dev/latest/api/base_model/#pydantic.BaseModel.model_extra).
-
-### Configuring the HTTP client
-
-You can directly override the [httpx client](https://www.python-httpx.org/api/#client) to customize it for your use case, including:
-
-- Support for [proxies](https://www.python-httpx.org/advanced/proxies/)
-- Custom [transports](https://www.python-httpx.org/advanced/transports/)
-- Additional [advanced](https://www.python-httpx.org/advanced/clients/) functionality
-
-```python
-import httpx
-from propraven import Propraven, DefaultHttpxClient
-
-client = Propraven(
-    # Or use the `PROPRAVEN_BASE_URL` env var
-    base_url="http://my.test.server.example.com:8083",
-    http_client=DefaultHttpxClient(
-        proxy="http://my.test.proxy.example.com",
-        transport=httpx.HTTPTransport(local_address="0.0.0.0"),
-    ),
-)
-```
-
-You can also customize the client on a per-request basis by using `with_options()`:
-
-```python
-client.with_options(http_client=DefaultHttpxClient(...))
-```
-
-### Managing HTTP resources
-
-By default the library closes underlying HTTP connections whenever the client is [garbage collected](https://docs.python.org/3/reference/datamodel.html#object.__del__). You can manually close the client using the `.close()` method if desired, or with a context manager that closes when exiting.
-
-```py
-from propraven import Propraven
-
-with Propraven() as client:
-  # make requests here
-  ...
-
-# HTTP client is now closed
-```
-
-## Versioning
-
-This package generally follows [SemVer](https://semver.org/spec/v2.0.0.html) conventions, though certain backwards-incompatible changes may be released as minor versions:
-
-1. Changes that only affect static types, without breaking runtime behavior.
-2. Changes to library internals which are technically public but not intended or documented for external use. _(Please open a GitHub issue to let us know if you are relying on such internals.)_
-3. Changes that we do not expect to impact the vast majority of users in practice.
-
-We take backwards-compatibility seriously and work hard to ensure you can rely on a smooth upgrade experience.
-
-We are keen for your feedback; please open an [issue](https://www.github.com/jdw2111/propraven-python/issues) with questions, bugs, or suggestions.
-
-### Determining the installed version
-
-If you've upgraded to the latest version but aren't seeing any new features you were expecting then your python environment is likely still using an older version.
-
-You can determine the version that is being used at runtime with:
-
-```py
-import propraven
-print(propraven.__version__)
-```
-
-## Requirements
-
-Python 3.9 or higher.
-
-## Contributing
-
-See [the contributing documentation](./CONTRIBUTING.md).
+Apache-2.0

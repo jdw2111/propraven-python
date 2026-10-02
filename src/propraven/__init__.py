@@ -1,102 +1,73 @@
-# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+"""Official Python SDK for the PropRaven property-intelligence API.
 
-import typing as _t
+Quick start::
 
-from . import types
-from ._types import NOT_GIVEN, Omit, NoneType, NotGiven, Transport, ProxiesTypes, omit, not_given
-from ._utils import file_from_path
-from ._client import (
-    Client,
-    Stream,
-    Timeout,
-    Propraven,
-    Transport,
-    AsyncClient,
-    AsyncStream,
-    AsyncPropraven,
-    RequestOptions,
-)
-from ._models import BaseModel
-from ._version import __title__, __version__
-from ._response import APIResponse as APIResponse, AsyncAPIResponse as AsyncAPIResponse
-from ._constants import DEFAULT_TIMEOUT, DEFAULT_MAX_RETRIES, DEFAULT_CONNECTION_LIMITS
-from ._exceptions import (
-    APIError,
-    ConflictError,
-    NotFoundError,
-    APIStatusError,
-    PropravenError,
-    RateLimitError,
-    APITimeoutError,
-    BadRequestError,
+    from propraven import PropRaven
+
+    client = PropRaven()  # reads PROPRAVEN_API_KEY
+    parcel = client.parcels.get("37:119:12104406")
+"""
+
+from . import types, webhooks
+from ._client import AsyncPropRaven, AsyncPropraven, PropRaven, Propraven
+from ._errors import (
     APIConnectionError,
+    APIError,
+    APIStatusError,
+    APITimeoutError,
     AuthenticationError,
+    BadRequestError,
+    ConflictError,
+    GatewayTimeoutError,
     InternalServerError,
+    MethodNotAllowedError,
+    NotFoundError,
+    PayloadTooLargeError,
+    PaymentRequiredError,
     PermissionDeniedError,
+    PropRavenError,
+    RateLimitError,
+    ServiceUnavailableError,
     UnprocessableEntityError,
-    APIResponseValidationError,
+    WebhookVerificationError,
 )
-from ._base_client import DefaultHttpxClient, DefaultAioHttpClient, DefaultAsyncHttpxClient
-from ._utils._logs import setup_logging as _setup_logging
+from ._transport import DEFAULT_BASE_URL, DEFAULT_MAX_RETRIES, DEFAULT_TIMEOUT, NOT_GIVEN, NotGiven, RateLimit
+from ._version import __title__, __version__
+from .webhooks import verify as verify_webhook
 
 __all__ = [
-    "types",
-    "__version__",
-    "__title__",
-    "NoneType",
-    "Transport",
-    "ProxiesTypes",
-    "NotGiven",
-    "NOT_GIVEN",
-    "not_given",
-    "Omit",
-    "omit",
-    "PropravenError",
+    "PropRaven",
+    "AsyncPropRaven",
+    "Propraven",
+    "AsyncPropraven",
+    "PropRavenError",
     "APIError",
     "APIStatusError",
-    "APITimeoutError",
-    "APIConnectionError",
-    "APIResponseValidationError",
     "BadRequestError",
     "AuthenticationError",
+    "PaymentRequiredError",
     "PermissionDeniedError",
     "NotFoundError",
+    "MethodNotAllowedError",
     "ConflictError",
+    "PayloadTooLargeError",
     "UnprocessableEntityError",
     "RateLimitError",
     "InternalServerError",
-    "Timeout",
-    "RequestOptions",
-    "Client",
-    "AsyncClient",
-    "Stream",
-    "AsyncStream",
-    "Propraven",
-    "AsyncPropraven",
-    "file_from_path",
-    "BaseModel",
+    "ServiceUnavailableError",
+    "GatewayTimeoutError",
+    "APIConnectionError",
+    "APITimeoutError",
+    "WebhookVerificationError",
+    "RateLimit",
+    "NOT_GIVEN",
+    "NotGiven",
+    "DEFAULT_BASE_URL",
     "DEFAULT_TIMEOUT",
     "DEFAULT_MAX_RETRIES",
-    "DEFAULT_CONNECTION_LIMITS",
-    "DefaultHttpxClient",
-    "DefaultAsyncHttpxClient",
-    "DefaultAioHttpClient",
+    "verify_webhook",
+    "webhooks",
+    "types",
+    "__version__",
+    "__title__",
 ]
-
-if not _t.TYPE_CHECKING:
-    from ._utils._resources_proxy import resources as resources
-
-_setup_logging()
-
-# Update the __module__ attribute for exported symbols so that
-# error messages point to this module instead of the module
-# it was originally defined in, e.g.
-# propraven._exceptions.NotFoundError -> propraven.NotFoundError
-__locals = locals()
-for __name in __all__:
-    if not __name.startswith("__"):
-        try:
-            __locals[__name].__module__ = "propraven"
-        except (TypeError, AttributeError):
-            # Some of our exported symbols are builtins which we can't set attributes for.
-            pass

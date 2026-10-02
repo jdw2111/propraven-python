@@ -1,0 +1,104 @@
+# Daily: pull https://propraven.com/openapi.json, regenerate the typed layer, run the tests,
+# and open (or update) a PR on branch `spec-sync` when anything changed.
+#
+# Note: PRs opened with GITHUB_TOKEN do not trigger other workflows, so CI does not run on
+# the spec-sync PR by itself; this job runs the generator check and the test suite instead
+# and reports the result in the PR body (re-run CI from the PR if you want the full matrix).
+name: Regenerate from OpenAPI
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 7 * * *"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: regenerate
+  cancel-in-progress: false
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download spec
+        run: |
+          curl -fsSL --retry 3 --retry-delay 5 https://propraven.com/openapi.json -o /tmp/openapi.json
+          # Validate and normalise (2-space indent, UTF-8, trailing newline) so formatting never causes a diff.
+          python - <<'PY'
+          import json
+          spec = json.load(open("/tmp/openapi.json", encoding="utf-8"))
+          assert str(spec.get("openapi", "")).startswith("3."), "not an OpenAPI 3 document"
+          assert spec.get("paths"), "spec has no paths"
+          with open("openapi.json", "w", encoding="utf-8") as fh:
+              fh.write(json.dumps(spec, indent=2, ensure_ascii=False) + "\n")
+          PY
+
+      - name: Generate
+        run: python scripts/generate.py
+
+      - name: Detect changes
+        id: diff
+        run: |
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No changes."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git status --short
+          fi
+
+      - name: Test
+        id: tests
+        if: steps.diff.outputs.changed == 'true'
+        continue-on-error: true
+        run: |
+          python -m pip install -e . pytest pytest-asyncio
+          python -m pytest -q 2>&1 | tee /tmp/pytest.txt
+
+      - name: Open or update PR
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B spec-sync
+          git add -A
+          git commit -m "chore: sync openapi.json from propraven.com and regenerate"
+          git push --force origin spec-sync
+
+          {
+            echo "Automated sync of \`openapi.json\` from https://propraven.com/openapi.json, regenerated with \`python scripts/generate.py\`."
+            echo
+            echo "Tests: **${TEST_OUTCOME}**"
+            echo
+            echo '```'
+            tail -n 20 /tmp/pytest.txt 2>/dev/null || echo "(no test output)"
+            echo '```'
+            echo
+            git diff --stat origin/main...HEAD | tail -n 30
+          } > /tmp/pr-body.md
+
+          if [ "$(gh pr view spec-sync --json state --jq .state 2>/dev/null || true)" = "OPEN" ]; then
+            gh pr edit spec-sync --body-file /tmp/pr-body.md
+          else
+            gh pr create --base main --head spec-sync \
+              --title "chore: sync OpenAPI spec and regenerate" \
+              --body-file /tmp/pr-body.md
+          fi
+
+      - name: Fail if tests failed
+        if: steps.tests.outcome == 'failure'
+        run: |
+          echo "Tests failed on the regenerated code; see the spec-sync PR." >&2
+          exit 1

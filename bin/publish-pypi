@@ -1,11 +1,33 @@
 #!/usr/bin/env bash
+# Build the sdist + wheel and publish them to PyPI.
+#
+# Used by .github/workflows/publish-pypi.yml (PyPI trusted publishing / OIDC: no token needed).
+# Locally you may set PYPI_TOKEN instead. Refuses to run when the version is already on PyPI.
+set -euo pipefail
 
-set -eux
+cd "$(dirname "$0")/.."
+
+PKG_VERSION="$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' src/propraven/_version.py)"
+PYPROJECT_VERSION="$(sed -n 's/^version = "\(.*\)"$/\1/p' pyproject.toml | head -n 1)"
+
+if [ -z "$PKG_VERSION" ] || [ "$PKG_VERSION" != "$PYPROJECT_VERSION" ]; then
+  echo "error: version mismatch: src/propraven/_version.py='$PKG_VERSION' pyproject.toml='$PYPROJECT_VERSION'" >&2
+  exit 1
+fi
+
+STATUS="$(curl -s -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/propraven/${PKG_VERSION}/json" || true)"
+if [ "$STATUS" = "200" ]; then
+  echo "error: propraven ${PKG_VERSION} is already on PyPI; bump the version in pyproject.toml and src/propraven/_version.py." >&2
+  exit 1
+fi
+echo "Publishing propraven ${PKG_VERSION} (PyPI lookup returned HTTP ${STATUS})"
+
 rm -rf dist
-mkdir -p dist
 uv build
+ls -l dist
+
 if [ -n "${PYPI_TOKEN:-}" ]; then
-  uv publish --token=$PYPI_TOKEN
+  uv publish --token "$PYPI_TOKEN"
 else
   uv publish
 fi

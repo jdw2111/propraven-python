@@ -1,43 +1,23 @@
-# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+"""Base classes for the generated resource namespaces."""
 
 from __future__ import annotations
 
-import time
-from typing import TYPE_CHECKING
+from typing import Any
 
-import anyio
-
-if TYPE_CHECKING:
-    from ._client import Propraven, AsyncPropraven
+__all__ = ["SyncAPIResource", "AsyncAPIResource"]
 
 
 class SyncAPIResource:
-    _client: Propraven
-
-    def __init__(self, client: Propraven) -> None:
+    def __init__(self, client: Any) -> None:
         self._client = client
-        self._get = client.get
-        self._post = client.post
-        self._patch = client.patch
-        self._put = client.put
-        self._delete = client.delete
-        self._get_api_list = client.get_api_list
 
-    def _sleep(self, seconds: float) -> None:
-        time.sleep(seconds)
+    def __repr__(self) -> str:
+        return f"<{type(self).__name__}>"
 
 
 class AsyncAPIResource:
-    _client: AsyncPropraven
-
-    def __init__(self, client: AsyncPropraven) -> None:
+    def __init__(self, client: Any) -> None:
         self._client = client
-        self._get = client.get
-        self._post = client.post
-        self._patch = client.patch
-        self._put = client.put
-        self._delete = client.delete
-        self._get_api_list = client.get_api_list
 
-    async def _sleep(self, seconds: float) -> None:
-        await anyio.sleep(seconds)
+    def __repr__(self) -> str:
+        return f"<{type(self).__name__}>"

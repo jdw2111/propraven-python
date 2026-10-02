@@ -1,84 +1,92 @@
-# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
-
 from __future__ import annotations
 
-import os
-import logging
-from typing import TYPE_CHECKING, Iterator, AsyncIterator
+import json
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import httpx
 import pytest
-from pytest_asyncio import is_async_test
 
-from propraven import Propraven, AsyncPropraven, DefaultAioHttpClient
-from propraven._utils import is_dict
+import propraven._client as client_module
+from propraven import AsyncPropRaven, PropRaven
 
-if TYPE_CHECKING:
-    from _pytest.fixtures import FixtureRequest  # pyright: ignore[reportPrivateImportUsage]
+BASE = "https://api.test"
 
-pytest.register_assert_rewrite("tests.utils")
-
-logging.getLogger("propraven").setLevel(logging.DEBUG)
+Handler = Callable[[httpx.Request], httpx.Response]
 
 
-# automatically add `pytest.mark.asyncio()` to all of our async tests
-# so we don't have to add that boilerplate everywhere
-def pytest_collection_modifyitems(items: list[pytest.Function]) -> None:
-    pytest_asyncio_tests = (item for item in items if is_async_test(item))
-    session_scope_marker = pytest.mark.asyncio(loop_scope="session")
-    for async_test in pytest_asyncio_tests:
-        async_test.add_marker(session_scope_marker, append=False)
+class Recorder:
+    """A scripted mock server: returns queued responses in order and records requests."""
 
-    # We skip tests that use both the aiohttp client and respx_mock as respx_mock
-    # doesn't support custom transports.
-    for item in items:
-        if "async_client" not in item.fixturenames or "respx_mock" not in item.fixturenames:
-            continue
+    def __init__(self) -> None:
+        self.requests: List[httpx.Request] = []
+        self.queue: List[Union[httpx.Response, Exception, Handler]] = []
 
-        if not hasattr(item, "callspec"):
-            continue
+    def add(self, item: Union[httpx.Response, Exception, Handler]) -> Recorder:
+        self.queue.append(item)
+        return self
 
-        async_client_param = item.callspec.params.get("async_client")
-        if is_dict(async_client_param) and async_client_param.get("http_client") == "aiohttp":
-            item.add_marker(pytest.mark.skip(reason="aiohttp client is not compatible with respx_mock"))
+    def json(self, body: Any, status: int = 200, headers: Optional[Dict[str, str]] = None) -> Recorder:
+        h = {"content-type": "application/json"}
+        h.update(headers or {})
+        return self.add(httpx.Response(status, content=json.dumps(body).encode(), headers=h))
+
+    def problem(self, status: int, body: Any, headers: Optional[Dict[str, str]] = None) -> Recorder:
+        h = {"content-type": "application/problem+json"}
+        h.update(headers or {})
+        return self.add(httpx.Response(status, content=json.dumps(body).encode(), headers=h))
+
+    def handle(self, request: httpx.Request) -> httpx.Response:
+        self.requests.append(request)
+        if not self.queue:
+            raise AssertionError(f"unexpected request {request.method} {request.url}")
+        item = self.queue.pop(0)
+        if isinstance(item, Exception):
+            raise item
+        if callable(item) and not isinstance(item, httpx.Response):
+            return item(request)
+        return item
+
+    @property
+    def last(self) -> httpx.Request:
+        return self.requests[-1]
+
+    def body(self, index: int = -1) -> Any:
+        return json.loads(self.requests[index].content.decode())
 
 
-base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
-
-api_key = "My API Key"
-
-
-@pytest.fixture(scope="session")
-def client(request: FixtureRequest) -> Iterator[Propraven]:
-    strict = getattr(request, "param", True)
-    if not isinstance(strict, bool):
-        raise TypeError(f"Unexpected fixture parameter type {type(strict)}, expected {bool}")
-
-    with Propraven(base_url=base_url, api_key=api_key, _strict_response_validation=strict) as client:
-        yield client
+@pytest.fixture
+def server() -> Recorder:
+    return Recorder()
 
 
-@pytest.fixture(scope="session")
-async def async_client(request: FixtureRequest) -> AsyncIterator[AsyncPropraven]:
-    param = getattr(request, "param", True)
+@pytest.fixture
+def sleeps(monkeypatch: pytest.MonkeyPatch) -> List[float]:
+    recorded: List[float] = []
 
-    # defaults
-    strict = True
-    http_client: None | httpx.AsyncClient = None
+    def fake_sleep(seconds: float) -> None:
+        recorded.append(seconds)
 
-    if isinstance(param, bool):
-        strict = param
-    elif is_dict(param):
-        strict = param.get("strict", True)
-        assert isinstance(strict, bool)
+    async def fake_asleep(seconds: float) -> None:
+        recorded.append(seconds)
 
-        http_client_type = param.get("http_client", "httpx")
-        if http_client_type == "aiohttp":
-            http_client = DefaultAioHttpClient()
-    else:
-        raise TypeError(f"Unexpected fixture parameter type {type(param)}, expected bool or dict")
+    monkeypatch.setattr(client_module, "_sleep", fake_sleep)
+    monkeypatch.setattr(client_module, "_asleep", fake_asleep)
+    return recorded
 
-    async with AsyncPropraven(
-        base_url=base_url, api_key=api_key, _strict_response_validation=strict, http_client=http_client
-    ) as client:
-        yield client
+
+@pytest.fixture(autouse=True)
+def _clean_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("PROPRAVEN_API_KEY", raising=False)
+    monkeypatch.delenv("PROPRAVEN_BASE_URL", raising=False)
+
+
+@pytest.fixture
+def client(server: Recorder, sleeps: List[float]) -> PropRaven:
+    http = httpx.Client(transport=httpx.MockTransport(server.handle))
+    return PropRaven(api_key="pz_test_key", base_url=BASE, http_client=http)
+
+
+@pytest.fixture
+def aclient(server: Recorder, sleeps: List[float]) -> AsyncPropRaven:
+    http = httpx.AsyncClient(transport=httpx.MockTransport(server.handle))
+    return AsyncPropRaven(api_key="pz_test_key", base_url=BASE, http_client=http)
