@@ -74,7 +74,7 @@ class SyncResourcesMixin:
 
     @cached_property
     def parcels(self) -> ParcelsResource:
-        """``parcels`` namespace (15 operations)."""
+        """``parcels`` namespace (16 operations)."""
         return ParcelsResource(self)
 
     @cached_property
@@ -173,7 +173,7 @@ class AsyncResourcesMixin:
 
     @cached_property
     def parcels(self) -> AsyncParcelsResource:
-        """``parcels`` namespace (15 operations)."""
+        """``parcels`` namespace (16 operations)."""
         return AsyncParcelsResource(self)
 
     @cached_property

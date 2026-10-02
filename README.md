@@ -194,10 +194,11 @@ untouched. Numeric fields are typed as numbers, and identifiers (`parcel_id`, `a
 
 <!-- BEGIN GENERATED METHODS (scripts/generate.py) -->
 
-69 operations. Every method exists on both `PropRaven` and `AsyncPropRaven`; methods marked *iter* also have an auto-paginating `<method>_iter(...)` sibling.
+70 operations. Every method exists on both `PropRaven` and `AsyncPropRaven`; methods marked *iter* also have an auto-paginating `<method>_iter(...)` sibling.
 
 | Method | HTTP | Summary |
 | --- | --- | --- |
+| `client.parcels.assessment_history(id)` | `GET /api/v1/parcels/{id}/assessment-history` | Get recorded annual assessment history |
 | `client.parcels.get(id)` | `GET /api/v1/parcels/{id}` | Get parcel by ID |
 | `client.parcels.owner(id)` | `GET /api/v1/parcels/{id}/owner` | Get parcel owner details and portfolio |
 | `client.parcels.permits(id)` | `GET /api/v1/parcels/{id}/permits` | Get parcel permits |

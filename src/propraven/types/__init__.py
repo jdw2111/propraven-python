@@ -13,6 +13,9 @@ __all__ = [
     "AccountUsageRateLimit",
     "AccountUsageResponse",
     "AffordabilityRow",
+    "AssessmentHistory",
+    "AssessmentHistoryCoverage",
+    "AssessmentHistoryRecord",
     "AutocompleteAddress",
     "AutocompleteLocation",
     "AutocompleteParcel",
@@ -192,6 +195,7 @@ __all__ = [
     "ParcelRentGate",
     "ParcelSiteGate",
     "ParcelSoldEvent",
+    "ParcelsAssessmentHistoryResponse",
     "ParcelsBatchParamsTuplesItem",
     "ParcelsBatchResponse",
     "ParcelsBatchResponseRowsItem",
@@ -393,6 +397,43 @@ __all__ = [
 ]
 
 
+class AssessmentHistoryRecord(TypedDict):
+    assessment_year: Optional[int]
+    """Source-stated year; null means unknown. Never inferred from a snapshot or capture date."""
+    tax_year: Optional[int]
+    """Source-stated year; null means unknown. Never inferred from a snapshot or capture date."""
+    vintage_year: Optional[int]
+    """Snapshot vintage year, not an assessment year."""
+    total_value: Optional[float]
+    land_value: Optional[float]
+    improvement_value: Optional[float]
+    tax_amount: Optional[float]
+    tax_paid_amount: Optional[float]
+    vintage: Optional[str]
+    source_url: Optional[str]
+    source_as_of: Optional[str]
+    value_basis: Literal["assessed", "appraised", "market", "taxable"]
+    source: str
+
+
+class AssessmentHistoryCoverage(TypedDict):
+    assessment_years: List[int]
+    tax_years: List[int]
+    record_count: int
+    truncated: bool
+    limit: int
+    note: str
+    source_product: str
+    source_version: str
+
+
+class AssessmentHistory(TypedDict):
+    canonical_id: str
+    status: Literal["ok", "empty"]
+    records: List[AssessmentHistoryRecord]
+    coverage: AssessmentHistoryCoverage
+
+
 class ParcelIdentityGate(TypedDict):
     applied: Optional[bool]
     suppressed: List[Optional[str]]
@@ -433,15 +474,20 @@ class ParcelRentGate(TypedDict):
 
 class _ParcelRequired(TypedDict):
     id: str
+    """PropRaven parcel UUID. Accepted by GET /parcels/{id}."""
     county_fips: str
-    """5-digit county FIPS code."""
+    """3-digit within-state county FIPS code (the 5-digit form is `state_fips` + `county_fips`)."""
     state_fips: str
+    """2-digit state FIPS code."""
     parcel_id: str
-    """County-assigned parcel identifier."""
+    """County-assigned parcel identifier (APN as the county publishes it). The canonical id is
+    `state_fips:county_fips:parcel_id`.
+    """
     address: Optional[str]
     normalized_address: Optional[str]
     city: Optional[str]
-    state: Optional[float]
+    state: Optional[int]
+    """State FIPS as a number (legacy duplicate of `state_fips`)."""
     zip: Optional[str]
     zip5: Optional[str]
     zip_plus4: Optional[str]
@@ -1096,6 +1142,7 @@ class AutocompleteAddress(TypedDict):
 
 class FullSearchResultResultsItem(TypedDict):
     parcel_id: str
+    """PropRaven parcel UUID (not the county APN; see `apn`). Pass it to GET /parcels/{id}."""
     apn: Optional[str]
     county_fips: str
     state_fips: str
@@ -4628,6 +4675,13 @@ class TrafficStationsResponse(TypedDict):
     data: List[TrafficStationsResponseDataItem]
 
 
+class WebhooksRetryDeliveryResponse(TypedDict):
+    id: str
+    status: Literal["pending"]
+    next_attempt_at: Optional[str]
+    attempts: int
+
+
 class CohortsListResponseCohortsItem(TypedDict):
     id: str
     name: Optional[str]
@@ -4643,6 +4697,7 @@ class CohortsListResponse(TypedDict):
 
 Error = Problem
 WebhookFilter = Union[WebhookFilterVariant1, WebhookFilterVariant2, WebhookFilterVariant3]
+ParcelsAssessmentHistoryResponse = AssessmentHistory
 ParcelsGetResponse = Parcel
 ParcelsPermitsResponse = Union[List[Permit], ParcelsPermitsResponseVariant2]
 ParcelsDeedsResponse = Union[List[Deed], ParcelsDeedsResponseVariant2]
@@ -4668,4 +4723,3 @@ WatchCreateResponse = Dict[str, Any]
 WatchDeleteResponse = Dict[str, Any]
 OwnersCardResponse = OwnerCard
 CohortsExportResponse = Union[str, Dict[str, Any]]
-WebhooksRetryDeliveryResponse = Any

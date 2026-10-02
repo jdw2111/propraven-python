@@ -17,6 +17,40 @@ __all__ = ["ParcelsResource", "AsyncParcelsResource"]
 class ParcelsResource(SyncAPIResource):
     """``client.parcels`` operations (sync)."""
 
+    def assessment_history(
+        self,
+        id: str,
+        *,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.ParcelsAssessmentHistoryResponse:
+        """Get recorded annual assessment history
+
+        ``GET /api/v1/parcels/{id}/assessment-history``
+
+        Returns source-backed historical assessment observations from published county history. Uses
+        exact national parcel identity. Never substitutes the current parcel snapshot. Unknown
+        assessment years remain null; vintage years and tax years are distinct. Missing years are
+        not interpolated. County coverage can be partial by town and year. Unpublished coverage and
+        failed reads return 503, not an empty history. Requires normal API or first-party session
+        authentication.
+
+        Args:
+            id: Canonical state_fips:county_fips:parcel_id, legacy county5:parcel_id, or parcel
+                UUID.
+        """
+        return cast("_t.ParcelsAssessmentHistoryResponse", self._client._request(
+            "GET",
+            "/api/v1/parcels/{id}/assessment-history",
+            path_params={"id": id},
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
     def get(
         self,
         id: str,
@@ -621,6 +655,40 @@ class ParcelsResource(SyncAPIResource):
 
 class AsyncParcelsResource(AsyncAPIResource):
     """``client.parcels`` operations (async)."""
+
+    async def assessment_history(
+        self,
+        id: str,
+        *,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.ParcelsAssessmentHistoryResponse:
+        """Get recorded annual assessment history
+
+        ``GET /api/v1/parcels/{id}/assessment-history``
+
+        Returns source-backed historical assessment observations from published county history. Uses
+        exact national parcel identity. Never substitutes the current parcel snapshot. Unknown
+        assessment years remain null; vintage years and tax years are distinct. Missing years are
+        not interpolated. County coverage can be partial by town and year. Unpublished coverage and
+        failed reads return 503, not an empty history. Requires normal API or first-party session
+        authentication.
+
+        Args:
+            id: Canonical state_fips:county_fips:parcel_id, legacy county5:parcel_id, or parcel
+                UUID.
+        """
+        return cast("_t.ParcelsAssessmentHistoryResponse", await self._client._request(
+            "GET",
+            "/api/v1/parcels/{id}/assessment-history",
+            path_params={"id": id},
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
 
     async def get(
         self,
