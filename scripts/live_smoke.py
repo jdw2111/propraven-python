@@ -174,9 +174,7 @@ def main() -> int:
         step("freshness.get", lambda: client.freshness.get())
 
     # 11-12. error paths
-    step(
-        "parcels.get(nonexistent)", lambda: client.parcels.get("99:999:does-not-exist-sdk-smoke"), expect=NotFoundError
-    )
+    step("parcels.get(nonexistent)", lambda: client.parcels.get("37:119:SDKSMOKE0000000000"), expect=NotFoundError)
     step("deals.absentee(limit=0)", lambda: client.deals.absentee(county_fips="37119", limit=0), expect=BadRequestError)
 
     rl = client.last_rate_limit
