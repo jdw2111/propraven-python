@@ -1447,7 +1447,7 @@ class TrafficStationHistory(_TrafficStationHistoryRequired, total=False):
     """Year-keyed historical counts (newest last)."""
 
 
-class CountyDetailMarketStatsItem(TypedDict):
+class _CountyDetailMarketStatsItemRequired(TypedDict):
     county_fips: str
     state_fips: str
     quarter: Optional[str]
@@ -1459,6 +1459,11 @@ class CountyDetailMarketStatsItem(TypedDict):
     avg_dom: Optional[float]
     """Average days on market."""
     refreshed_at: Optional[str]
+
+
+class CountyDetailMarketStatsItem(_CountyDetailMarketStatsItemRequired, total=False):
+    under_review: List[Optional[str]]
+    stale_quarter: Optional[bool]
 
 
 class CountyDetailDataProvenanceMarket(TypedDict):
@@ -1527,8 +1532,8 @@ class MarketFlipsRow(TypedDict):
     total_profit: Optional[int]
 
 
-class OwnerTransaction(TypedDict, total=False):
-    document_number: str
+class OwnerTransaction(TypedDict):
+    document_number: Optional[str]
     recording_date: Optional[str]
     sale_date: Optional[str]
     document_type: Optional[str]
@@ -2657,6 +2662,8 @@ class _MarketCountiesResponseDataItemRequired(TypedDict):
 
 
 class MarketCountiesResponseDataItem(_MarketCountiesResponseDataItemRequired, total=False):
+    under_review: List[Optional[str]]
+    stale_quarter: Optional[bool]
     state_abbr: str
     median_price: float
     avg_price: float
@@ -2665,12 +2672,16 @@ class MarketCountiesResponseDataItem(_MarketCountiesResponseDataItemRequired, to
     avg_days_on_market: int
 
 
-class MarketCountiesResponseSummary(TypedDict):
+class _MarketCountiesResponseSummaryRequired(TypedDict):
     total_counties: int
-    total_sales: int
+    total_sales: Optional[int]
     overall_median_price: float
-    total_volume: int
+    total_volume: Optional[int]
     avg_yoy_pct: float
+
+
+class MarketCountiesResponseSummary(_MarketCountiesResponseSummaryRequired, total=False):
+    under_review: List[Optional[str]]
 
 
 class MarketCountiesResponse(TypedDict):
@@ -3121,7 +3132,7 @@ class MarketFlipsResponse(TypedDict):
     offset: int
 
 
-class OwnersTransactionsResponse(TypedDict, total=False):
+class OwnersTransactionsResponse(TypedDict):
     data: List[OwnerTransaction]
     count: int
 
