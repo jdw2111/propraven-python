@@ -29,7 +29,7 @@ from propraven import PropRaven
 client = PropRaven()  # reads PROPRAVEN_API_KEY from the environment
 
 parcel = client.parcels.get("37:119:12104406")
-print(parcel.get("address"), parcel.get("owner_name"))
+print(parcel.get("address"), parcel.get("zoning"))
 
 page = client.search.parcels(
     bounds={"north": 35.215, "south": 35.205, "east": -80.855, "west": -80.865},
@@ -61,6 +61,16 @@ async def main() -> None:
 
 asyncio.run(main())
 ```
+
+## Examples
+
+[Four runnable examples](examples/README.md) cover address and bounding-box search, one parcel, coverage by state, and free storefront catalog/availability. They replay schema-derived JSON in memory by default; no API key or network is needed.
+
+```sh
+python -m examples.run --mock
+```
+
+See the examples guide for individual commands and explicit `--live` mode. Recorded owner fields are null, and examples never call purchase or payment endpoints.
 
 ## Authentication
 

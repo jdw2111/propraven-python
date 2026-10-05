@@ -25,10 +25,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install
-        run: python -m pip install -e . pytest pytest-asyncio
+        run: python -m pip install -e . pytest pytest-asyncio jsonschema
 
       - name: Generated code is up to date
         run: python scripts/generate.py --check
+
+      - name: Run all public examples offline
+        run: python -m examples.run --mock
 
       - name: Tests
         run: python -m pytest -q
@@ -48,7 +51,7 @@ jobs:
         run: python -m pip install ruff build twine
 
       - name: Ruff
-        run: ruff check src tests scripts
+        run: ruff check src tests scripts examples
 
       - name: Build sdist + wheel
         run: python -m build
