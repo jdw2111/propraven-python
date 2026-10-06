@@ -61,7 +61,7 @@ jobs:
         if: steps.diff.outputs.changed == 'true'
         continue-on-error: true
         run: |
-          python -m pip install -e . pytest pytest-asyncio
+          python -m pip install -e . pytest pytest-asyncio jsonschema
           python -m pytest -q 2>&1 | tee /tmp/pytest.txt
 
       - name: Open or update PR
