@@ -84,12 +84,271 @@ __all__ = [
     "FreshnessDatasetsResponseDatasetsItem",
     "FreshnessDatasetsResponseDatasetsItemCoverage",
     "FreshnessDatasetsResponseDatasetsItemRecordActivity",
+    "FreshnessDatasetsResponseDatasetsItemRecordActivityFutureDateGuard",
     "FreshnessDatasetsResponseDatasetsItemRefresh",
     "FreshnessGetResponse",
     "FullSearchResult",
     "FullSearchResultResultsItem",
     "FullSearchResultWarningsItem",
     "HighLandRatioParcel",
+    "IntelligenceAssessmentObservation",
+    "IntelligenceCalculation",
+    "IntelligenceCalculationContext",
+    "IntelligenceCalculationContextActualScopeVariant1",
+    "IntelligenceCalculationContextMetricPeriodsValueVariant1",
+    "IntelligenceCalculationContextMetricPeriodsValueVariant1Window",
+    "IntelligenceCalculationContextMetricPeriodsValueVariant2",
+    "IntelligenceCalculationContextMetricPeriodsValueVariant3",
+    "IntelligenceCalculationContextMetricPeriodsValueVariant3Current",
+    "IntelligenceCalculationContextMetricPeriodsValueVariant3Previous",
+    "IntelligenceCalculationContextMetricPeriodsValueVariant4",
+    "IntelligenceCalculationContextMetricPeriodsValueVariant4Flow",
+    "IntelligenceCalculationContextPeriodVariant1Variant1",
+    "IntelligenceCalculationContextPeriodVariant1Variant1Window",
+    "IntelligenceCalculationContextPeriodVariant1Variant2",
+    "IntelligenceCalculationContextPeriodVariant1Variant3",
+    "IntelligenceCalculationContextPeriodVariant1Variant3Current",
+    "IntelligenceCalculationContextPeriodVariant1Variant3Previous",
+    "IntelligenceCalculationContextPeriodVariant1Variant4",
+    "IntelligenceCalculationContextPeriodVariant1Variant4Flow",
+    "IntelligenceCalculationContextQueryVariant1",
+    "IntelligenceCalculationContextRequestedScopeVariant1",
+    "IntelligenceCalculationMetricsValue",
+    "IntelligenceCalculationMetricsValueValueVariant1",
+    "IntelligenceCreateScenarioResponse",
+    "IntelligenceEvidence",
+    "IntelligenceEvidenceSourceRecord",
+    "IntelligenceHandoff",
+    "IntelligenceHandoffComputedResults",
+    "IntelligenceHandoffComputedResultsMarketItem",
+    "IntelligenceHandoffComputedResultsMarketItemContext",
+    "IntelligenceHandoffComputedResultsMarketItemContextActualScopeVariant1",
+    "IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant1",
+    "IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant1Window",
+    "IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant2",
+    "IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant3",
+    "IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant3Current",
+    "IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant3Previous",
+    "IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant4",
+    "IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant4Flow",
+    "IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant1",
+    "IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant1Window",
+    "IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant2",
+    "IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant3",
+    "IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant3Current",
+    "IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant3Previous",
+    "IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant4",
+    "IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant4Flow",
+    "IntelligenceHandoffComputedResultsMarketItemContextQueryVariant1",
+    "IntelligenceHandoffComputedResultsMarketItemContextRequestedScopeVariant1",
+    "IntelligenceHandoffComputedResultsMarketItemMetricsValue",
+    "IntelligenceHandoffComputedResultsMarketItemMetricsValueValueVariant1",
+    "IntelligenceHandoffComputedResultsOwnerItem",
+    "IntelligenceHandoffComputedResultsOwnerItemContext",
+    "IntelligenceHandoffComputedResultsOwnerItemContextActualScopeVariant1",
+    "IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant1",
+    "IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant1Window",
+    "IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant2",
+    "IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant3",
+    "IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant3Current",
+    "IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant3Previous",
+    "IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant4",
+    "IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant4Flow",
+    "IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant1",
+    "IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant1Window",
+    "IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant2",
+    "IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant3",
+    "IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant3Current",
+    "IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant3Previous",
+    "IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant4",
+    "IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant4Flow",
+    "IntelligenceHandoffComputedResultsOwnerItemContextQueryVariant1",
+    "IntelligenceHandoffComputedResultsOwnerItemContextRequestedScopeVariant1",
+    "IntelligenceHandoffComputedResultsOwnerItemMetricsValue",
+    "IntelligenceHandoffComputedResultsOwnerItemMetricsValueValueVariant1",
+    "IntelligenceHandoffComputedResultsRedevelopmentItem",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContext",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextActualScopeVariant1",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant1",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant1Window",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant2",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant3",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant3Current",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant3Previous",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant4",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant4Flow",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant1",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant1Window",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant2",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant3",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant3Current",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant3Previous",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant4",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant4Flow",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextQueryVariant1",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemContextRequestedScopeVariant1",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemMetricsValue",
+    "IntelligenceHandoffComputedResultsRedevelopmentItemMetricsValueValueVariant1",
+    "IntelligenceHandoffComputedResultsSellerItem",
+    "IntelligenceHandoffComputedResultsSellerItemContext",
+    "IntelligenceHandoffComputedResultsSellerItemContextActualScopeVariant1",
+    "IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant1",
+    "IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant1Window",
+    "IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant2",
+    "IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant3",
+    "IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant3Current",
+    "IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant3Previous",
+    "IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant4",
+    "IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant4Flow",
+    "IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant1",
+    "IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant1Window",
+    "IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant2",
+    "IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant3",
+    "IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant3Current",
+    "IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant3Previous",
+    "IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant4",
+    "IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant4Flow",
+    "IntelligenceHandoffComputedResultsSellerItemContextQueryVariant1",
+    "IntelligenceHandoffComputedResultsSellerItemContextRequestedScopeVariant1",
+    "IntelligenceHandoffComputedResultsSellerItemMetricsValue",
+    "IntelligenceHandoffComputedResultsSellerItemMetricsValueValueVariant1",
+    "IntelligenceHandoffObservationsItem",
+    "IntelligenceHandoffQuery",
+    "IntelligenceHandoffResponse",
+    "IntelligenceHandoffUserAssumptionsVariant1",
+    "IntelligenceHandoffUserAssumptionsVariant1Result",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContext",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextActualScopeVariant1",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant1",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant1Window",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant2",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant3",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant3Current",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant3Previous",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant4",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant4Flow",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant1",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant1Window",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant2",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant3",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant3Current",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant3Previous",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant4",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant4Flow",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextQueryVariant1",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultContextRequestedScopeVariant1",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultMetricsValue",
+    "IntelligenceHandoffUserAssumptionsVariant1ResultMetricsValueValueVariant1",
+    "IntelligenceInstant",
+    "IntelligenceParcelId",
+    "IntelligenceResidualAssumptions",
+    "IntelligenceResidualAssumptionsCostsItem",
+    "IntelligenceRetainedId",
+    "IntelligenceRights",
+    "IntelligenceRun",
+    "IntelligenceRunDetail",
+    "IntelligenceRunGroups",
+    "IntelligenceRunGroupsMarketItem",
+    "IntelligenceRunGroupsMarketItemContext",
+    "IntelligenceRunGroupsMarketItemContextActualScopeVariant1",
+    "IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant1",
+    "IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant1Window",
+    "IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant2",
+    "IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant3",
+    "IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant3Current",
+    "IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant3Previous",
+    "IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant4",
+    "IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant4Flow",
+    "IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant1",
+    "IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant1Window",
+    "IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant2",
+    "IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant3",
+    "IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant3Current",
+    "IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant3Previous",
+    "IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant4",
+    "IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant4Flow",
+    "IntelligenceRunGroupsMarketItemContextQueryVariant1",
+    "IntelligenceRunGroupsMarketItemContextRequestedScopeVariant1",
+    "IntelligenceRunGroupsMarketItemMetricsValue",
+    "IntelligenceRunGroupsMarketItemMetricsValueValueVariant1",
+    "IntelligenceRunGroupsOwnerItem",
+    "IntelligenceRunGroupsOwnerItemContext",
+    "IntelligenceRunGroupsOwnerItemContextActualScopeVariant1",
+    "IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant1",
+    "IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant1Window",
+    "IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant2",
+    "IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant3",
+    "IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant3Current",
+    "IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant3Previous",
+    "IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant4",
+    "IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant4Flow",
+    "IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant1",
+    "IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant1Window",
+    "IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant2",
+    "IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant3",
+    "IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant3Current",
+    "IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant3Previous",
+    "IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant4",
+    "IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant4Flow",
+    "IntelligenceRunGroupsOwnerItemContextQueryVariant1",
+    "IntelligenceRunGroupsOwnerItemContextRequestedScopeVariant1",
+    "IntelligenceRunGroupsOwnerItemMetricsValue",
+    "IntelligenceRunGroupsOwnerItemMetricsValueValueVariant1",
+    "IntelligenceRunGroupsRedevelopmentItem",
+    "IntelligenceRunGroupsRedevelopmentItemContext",
+    "IntelligenceRunGroupsRedevelopmentItemContextActualScopeVariant1",
+    "IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant1",
+    "IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant1Window",
+    "IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant2",
+    "IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant3",
+    "IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant3Current",
+    "IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant3Previous",
+    "IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant4",
+    "IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant4Flow",
+    "IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant1",
+    "IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant1Window",
+    "IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant2",
+    "IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant3",
+    "IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant3Current",
+    "IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant3Previous",
+    "IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant4",
+    "IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant4Flow",
+    "IntelligenceRunGroupsRedevelopmentItemContextQueryVariant1",
+    "IntelligenceRunGroupsRedevelopmentItemContextRequestedScopeVariant1",
+    "IntelligenceRunGroupsRedevelopmentItemMetricsValue",
+    "IntelligenceRunGroupsRedevelopmentItemMetricsValueValueVariant1",
+    "IntelligenceRunGroupsSellerItem",
+    "IntelligenceRunGroupsSellerItemContext",
+    "IntelligenceRunGroupsSellerItemContextActualScopeVariant1",
+    "IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant1",
+    "IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant1Window",
+    "IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant2",
+    "IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant3",
+    "IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant3Current",
+    "IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant3Previous",
+    "IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant4",
+    "IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant4Flow",
+    "IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant1",
+    "IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant1Window",
+    "IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant2",
+    "IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant3",
+    "IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant3Current",
+    "IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant3Previous",
+    "IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant4",
+    "IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant4Flow",
+    "IntelligenceRunGroupsSellerItemContextQueryVariant1",
+    "IntelligenceRunGroupsSellerItemContextRequestedScopeVariant1",
+    "IntelligenceRunGroupsSellerItemMetricsValue",
+    "IntelligenceRunGroupsSellerItemMetricsValueValueVariant1",
+    "IntelligenceRunQuery",
+    "IntelligenceRunResponse",
+    "IntelligenceScenarioInput",
+    "IntelligenceScenarioInputAssumptions",
+    "IntelligenceScenarioInputAssumptionsCostsItem",
+    "IntelligenceScenarioRevision",
+    "IntelligenceScope",
+    "IntelligenceSignalsResponse",
+    "IntelligenceSourceCapability",
     "Lead",
     "LeadFeed",
     "LeadFeedGeo",
@@ -103,6 +362,9 @@ __all__ = [
     "LeadsQuote",
     "LeadsQuoteBreakdown",
     "Lender",
+    "LicenseesFirmsResponse",
+    "LicenseesFirmsResponseFirmsItem",
+    "LicenseesFirmsResponseFirmsItemLocationsItem",
     "LongHoldParcel",
     "LookupBatchResponse",
     "LookupBatchResponseItemsItem",
@@ -111,6 +373,7 @@ __all__ = [
     "LookupGetResponse",
     "LookupGetResponseParcel",
     "MailingAddress",
+    "MarketCompareZillowMarketsResponse",
     "MarketCountiesResponse",
     "MarketCountiesResponseDataItem",
     "MarketCountiesResponseSummary",
@@ -136,6 +399,8 @@ __all__ = [
     "MarketTrendsResponse",
     "MarketTrendsResponseDataItem",
     "MarketTrendsResponseDataItemQuartersItem",
+    "MarketZillowContextResponse",
+    "MarketZillowTimeseriesResponse",
     "Money",
     "Owner",
     "OwnerCard",
@@ -177,6 +442,7 @@ __all__ = [
     "OwnersSearchResponse",
     "OwnersTransactionsResponse",
     "Parcel",
+    "ParcelAssessedValuePartsCheck",
     "ParcelDerivedGate",
     "ParcelDossier",
     "ParcelDossierBoundary",
@@ -195,10 +461,13 @@ __all__ = [
     "ParcelRentGate",
     "ParcelSiteGate",
     "ParcelSoldEvent",
+    "ParcelTaxStatus",
+    "ParcelValueLabels",
     "ParcelsAssessmentHistoryResponse",
     "ParcelsBatchParamsTuplesItem",
     "ParcelsBatchResponse",
     "ParcelsBatchResponseRowsItem",
+    "ParcelsBatchResponseRowsItemValueLabels",
     "ParcelsCompPackResponse",
     "ParcelsCompPackResponseQuote",
     "ParcelsCompPackResponseQuoteBreakdown",
@@ -206,7 +475,9 @@ __all__ = [
     "ParcelsCompPackResponseSampleItem",
     "ParcelsCompPackResponseSubject",
     "ParcelsCompsResponse",
+    "ParcelsCompsResponseCompSetQuality",
     "ParcelsCompsResponseCompsItem",
+    "ParcelsCompsResponseCompsItemSimilarityComponents",
     "ParcelsCompsResponseProvenanceGate",
     "ParcelsCompsResponseProvenanceGateScope",
     "ParcelsCompsResponseSubject",
@@ -215,6 +486,8 @@ __all__ = [
     "ParcelsGeojsonResponse",
     "ParcelsGetResponse",
     "ParcelsOccupantsResponse",
+    "ParcelsOccupantsResponseLicensees",
+    "ParcelsOccupantsResponseLicenseesRowsItem",
     "ParcelsOccupantsResponseOccupantsItem",
     "ParcelsOwnerResponse",
     "ParcelsOwnerResponseContact",
@@ -244,6 +517,7 @@ __all__ = [
     "ParcelsRiskScoreResponseQuotePrice",
     "ParcelsRiskScoreResponseSubject",
     "ParcelsRisksResponse",
+    "ParcelsTaxStatusResponse",
     "ParcelsTrafficHistoryResponse",
     "ParcelsViolationsResponse",
     "ParcelsViolationsResponseCoveredJurisdictionsItem",
@@ -252,6 +526,7 @@ __all__ = [
     "ParcelsViolationsResponseWithheld",
     "PeopleFieldsWithheld",
     "Permit",
+    "PermitPermitContactsItem",
     "PortfolioOwner",
     "Problem",
     "ProblemErrorsItem",
@@ -344,6 +619,9 @@ __all__ = [
     "StorefrontCatalogResponseStateWorstGapsItem",
     "StorefrontCatalogResponseTiers",
     "StorefrontCatalogResponseWartsItem",
+    "TaxDelinquencyCoverage",
+    "TaxDelinquencyFilter",
+    "TaxDelinquencyRecord",
     "TrafficStationHistory",
     "TrafficStationHistoryHistoryItem",
     "TrafficStationHistoryPointsItem",
@@ -394,6 +672,55 @@ __all__ = [
     "X402PaymentRequired",
     "X402PaymentRequiredAcceptsItem",
     "X402PaymentRequiredAcceptsItemExtra",
+    "ZillowComparison",
+    "ZillowComparisonGapsItem",
+    "ZillowComparisonMetricsItem",
+    "ZillowComparisonMetricsItemAnnualChangeVariant1",
+    "ZillowComparisonMetricsItemGeographyVariant1",
+    "ZillowComparisonMetricsItemMappingVariant1",
+    "ZillowComparisonMetricsItemMonthlyChangeVariant1",
+    "ZillowComparisonMetricsItemPointsItem",
+    "ZillowComparisonMetricsItemRentAccelerationVariant1",
+    "ZillowComparisonMetricsItemRightsVariant1",
+    "ZillowComparisonMetricsItemSnapshotVariant1",
+    "ZillowComparisonMetricsItemVariantVariant1",
+    "ZillowComparisonResponse",
+    "ZillowContext",
+    "ZillowContextMetricsItem",
+    "ZillowContextMetricsItemAnnualChangeVariant1",
+    "ZillowContextMetricsItemGeographyVariant1",
+    "ZillowContextMetricsItemMappingVariant1",
+    "ZillowContextMetricsItemMonthlyChangeVariant1",
+    "ZillowContextMetricsItemPointsItem",
+    "ZillowContextMetricsItemRentAccelerationVariant1",
+    "ZillowContextMetricsItemRightsVariant1",
+    "ZillowContextMetricsItemSnapshotVariant1",
+    "ZillowContextMetricsItemVariantVariant1",
+    "ZillowContextRequestedGeography",
+    "ZillowContextRights",
+    "ZillowMetric",
+    "ZillowMetricAnnualChangeVariant1",
+    "ZillowMetricGeographyVariant1",
+    "ZillowMetricMappingVariant1",
+    "ZillowMetricMonthlyChangeVariant1",
+    "ZillowMetricPointsItem",
+    "ZillowMetricRentAccelerationVariant1",
+    "ZillowMetricRightsVariant1",
+    "ZillowMetricSnapshotVariant1",
+    "ZillowMetricVariantVariant1",
+    "ZillowPropertyComparison",
+    "ZillowPropertyComparisonItemsItem",
+    "ZillowPropertyComparisonItemsItemGap",
+    "ZillowPropertyComparisonItemsItemResult",
+    "ZillowPropertyComparisonItemsItemResultAnnualChangeVariant1",
+    "ZillowPropertyComparisonItemsItemResultGeographyVariant1",
+    "ZillowPropertyComparisonItemsItemResultMappingVariant1",
+    "ZillowPropertyComparisonItemsItemResultMonthlyChangeVariant1",
+    "ZillowPropertyComparisonItemsItemResultPointsItem",
+    "ZillowPropertyComparisonItemsItemResultRentAccelerationVariant1",
+    "ZillowPropertyComparisonItemsItemResultRightsVariant1",
+    "ZillowPropertyComparisonItemsItemResultSnapshotVariant1",
+    "ZillowPropertyComparisonItemsItemResultVariantVariant1",
 ]
 
 
@@ -472,6 +799,30 @@ class ParcelRentGate(TypedDict):
     note: Optional[str]
 
 
+class ParcelValueLabels(TypedDict):
+    """The display label for each value field: `market_value` → "County market value", `avm_value` →
+    "PropRaven estimate".
+    """
+    market_value: Literal["County market value"]
+    avm_value: Literal["PropRaven estimate"]
+
+
+class _ParcelAssessedValuePartsCheckRequired(TypedDict):
+    status: Literal["within_tolerance", "parts_do_not_sum"]
+    land_plus_improvement: float
+    total_assessed_value: float
+    difference: float
+    difference_pct: Optional[float]
+    tolerance_pct: float
+
+
+class ParcelAssessedValuePartsCheck(_ParcelAssessedValuePartsCheckRequired, total=False):
+    """Whether land_assessed_value + improvement_assessed_value equals total_assessed_value within 1 %
+    (floor $1). The three values are served as recorded either way (#557).
+    """
+    note: str
+
+
 class _ParcelRequired(TypedDict):
     id: str
     """PropRaven parcel UUID. Accepted by GET /parcels/{id}."""
@@ -486,8 +837,10 @@ class _ParcelRequired(TypedDict):
     address: Optional[str]
     normalized_address: Optional[str]
     city: Optional[str]
-    state: Optional[int]
-    """State FIPS as a number (legacy duplicate of `state_fips`)."""
+    state: Optional[str]
+    """USPS 2-letter state code of `state_fips` ("37" → "NC"). Always a string; the 2-digit FIPS is
+    `state_fips`.
+    """
     zip: Optional[str]
     zip5: Optional[str]
     zip_plus4: Optional[str]
@@ -499,9 +852,28 @@ class _ParcelRequired(TypedDict):
     land_assessed_value: Optional[float]
     improvement_assessed_value: Optional[float]
     last_sale_price: Optional[float]
+    """Price of the last sale. From the parcel record; where null, filled from the same county-recorder
+    deed that supplies `last_sale_date` (`last_sale_price_basis: county_recorder_deeds`). A nominal
+    consideration (≤ $1,000) is never served as a price. A sentinel price ($0, $1 or $100) is served
+    as null with `last_sale_price_raw` and `last_sale_price_flag: sentinel_value` (#557).
+    """
     last_sale_date: Optional[str]
+    """Date of the last sale. From the parcel record; where the record's date is null or withheld (e.g.
+    a county collection stamp, `site_gate`), filled from the latest arm's-length transfer in the
+    county recorder's per-deed rows (`last_sale_date_basis: county_recorder_deeds`,
+    `last_sale_source: "County recorder (deeds)"`).
+    """
     market_value: Optional[float]
+    """County market value: the market (just / full cash / appraised) value on the county assessor's
+    record, or null when the record carries none. Never PropRaven's model output: a stored value
+    that is the same figure as `avm_value` (and not the county's own assessed value) is withheld
+    here and `market_value_basis` says so. PropRaven's model is `avm_value` ("PropRaven estimate").
+    """
     avm_value: Optional[float]
+    """PropRaven estimate: PropRaven's own automated valuation (a model output — see `avm_method`,
+    `avm_method_family`, `avm_method_basis`). Not the county's value and not a licensed appraisal.
+    Display it as "PropRaven estimate", never as "market value".
+    """
     avm_confidence: Optional[str]
     avm_method: Optional[str]
     tax_amount: Optional[float]
@@ -532,9 +904,17 @@ class _ParcelRequired(TypedDict):
     construction_type: Optional[str]
     owner_name: Optional[str]
     owner_address: Optional[str]
+    """Owner's mailing street line. Read from whichever mailing column family the record fills
+    (owner_address/… or owner_mailing_/…), one family per parcel — the same rule as GET
+    /api/v1/parcels/{id}/owner. People data: requires an account; metered and logged (see
+    `owner_mailing_fields`).
+    """
     owner_city: Optional[str]
+    """Owner's mailing city, from the same family as `owner_address`."""
     owner_state: Optional[str]
+    """Owner's mailing state, from the same family as `owner_address`."""
     owner_zip: Optional[str]
+    """Owner's mailing ZIP, from the same family as `owner_address`."""
     ownership_type: Optional[str]
     owner_entity_type: Optional[str]
     entity_type: Optional[str]
@@ -572,8 +952,84 @@ class _ParcelRequired(TypedDict):
 
 
 class Parcel(_ParcelRequired, total=False):
+    owner_occupied_flag_basis: str
+    """How the served owner_occupied_flag was derived (one rule with is_absentee, so the row never says
+    both absentee and owner-occupied): `recomputed_from_row` = from this record's own mailing
+    address versus its situs; `input_missing` = the record lacks those inputs and
+    owner_occupied_flag is null. Present whenever owner_occupied_flag is served and the derivation
+    ran.
+    """
     is_flip_dominant_share_pct: Optional[float]
     price_per_sqft_basis: str
+    """What price_per_sqft divides by building_sqft, read from the row (#557): `market_value` (county
+    market value), `avm_value` (PropRaven estimate), `total_assessed_value`, `last_sale_price`,
+    `unreproduced` (no served value reproduces it), or `input_missing` (no building_sqft; the ratio
+    is withheld).
+    """
+    market_value_basis: Literal["county_record", "propraven_estimate", "unavailable"]
+    """What `market_value` is: `county_record` (the record's market-value column as the county source
+    published it), `propraven_estimate` (the stored value was PropRaven's own estimate, so
+    `market_value` is null; the estimate is in `avm_value`), or `unavailable`.
+    """
+    market_value_note: str
+    """Present when `market_value` was withheld because it was PropRaven's estimate, not the county's
+    value.
+    """
+    value_labels: ParcelValueLabels
+    """The display label for each value field: `market_value` → "County market value", `avm_value` →
+    "PropRaven estimate".
+    """
+    last_sale_date_basis: str
+    """Why `last_sale_date` holds what it does: `county_recorder_deeds` when filled from the deeds, or
+    the site gate's reason when the record's own date was withheld (e.g.
+    `sale_date_modal_collection_stamp`).
+    """
+    last_sale_date_raw: Optional[str]
+    """The record's own last-sale date when the site gate withheld it (evidence, not a sale date)."""
+    last_sale_price_basis: str
+    """`county_recorder_deeds` when `last_sale_price` was filled from the deeds;
+    `nominal_consideration_not_a_price` / `not_recorded_on_deed` when the date was filled but the
+    deed carries no market price.
+    """
+    last_sale_source: Literal["County recorder (deeds)"]
+    """Present when a last-sale field was filled from deeds: "County recorder (deeds)"."""
+    mailing_family_basis: Literal["owner_mailing"]
+    """Present when the owner mailing fields were read from the `owner_mailing_*` column family because
+    the `owner_address` family is not mail-ready: `owner_mailing`.
+    """
+    assessed_value_parts_check: ParcelAssessedValuePartsCheck
+    """Whether land_assessed_value + improvement_assessed_value equals total_assessed_value within 1 %
+    (floor $1). The three values are served as recorded either way (#557).
+    """
+    price_per_sqft_note: str
+    """The formula behind price_per_sqft_basis, in words."""
+    entity_type_raw: Optional[str]
+    """The name-pattern entity_type when it was reconciled to owner_entity_type for a government owner
+    (#557).
+    """
+    entity_type_basis: str
+    """`reconciled_to_owner_entity_type` when entity_type was overridden."""
+    entity_type_note: str
+    land_use_code_raw: Optional[str]
+    """The stored land_use_code when the code/description pair was swapped at source and served swapped
+    back.
+    """
+    land_use_desc_raw: Optional[str]
+    """The stored land_use_desc when it was a code (withheld) or part of a swapped pair."""
+    land_use_basis: str
+    """`swapped_at_source`: land_use_code and land_use_desc were stored in each other's fields."""
+    land_use_desc_basis: str
+    """`code_not_description`: the source's description field holds a code (e.g. DC tax class, a second
+    NY property-class code); withheld, kept as land_use_desc_raw.
+    """
+    land_use_desc_note: str
+    last_sale_price_raw: float
+    """The stored sale price when it is a sentinel ($0 / $1 / $100) served as null."""
+    last_sale_price_flag: Literal["sentinel_value"]
+    is_redevelopment_candidate_raw: Optional[Union[bool, str]]
+    """The stored flag when it was served false for a government-owned parcel."""
+    is_redevelopment_candidate_basis: str
+    """`government_owner`: a government-owned parcel is not a redevelopment candidate."""
 
 
 class _OwnerRequired(TypedDict):
@@ -603,6 +1059,26 @@ class Owner(_OwnerRequired, total=False):
     states: List[str]
 
 
+class _PermitPermitContactsItemRequired(TypedDict):
+    kind: Literal["phone", "email"]
+    role: Literal["owner", "applicant", "contractor", "unknown"]
+    value: str
+    """The value exactly as published."""
+    key: str
+    """The publisher's field name."""
+
+
+class PermitPermitContactsItem(_PermitPermitContactsItemRequired, total=False):
+    role_basis: Literal["key_name", "publisher", "role_field", "unstated"]
+    name: Optional[str]
+    e164: Optional[str]
+    """Phones: +1XXXXXXXXXX, or null when the value is not a plausible NANP number."""
+    display: Optional[str]
+    ext: Optional[str]
+    valid: bool
+    """E-mails: true when the value has the shape local@domain.tld."""
+
+
 class _PermitRequired(TypedDict):
     permit_number: Optional[str]
     permit_type: Optional[str]
@@ -623,6 +1099,24 @@ class Permit(_PermitRequired, total=False):
     type: str
     status: Literal["issued", "pending", "approved", "expired", "completed", "denied"]
     contractor: Optional[str]
+    permit_id: Optional[str]
+    """The permit's row id (a stable id, not people data)."""
+    owner_name: Optional[str]
+    """PEOPLE DATA (account required): the property owner as the jurisdiction filed it on the permit."""
+    applicant_name: Optional[str]
+    """PEOPLE DATA (account required): the applicant as the jurisdiction filed it on the permit."""
+    permit_contacts: List[PermitPermitContactsItem]
+    """PEOPLE DATA (account required; absent otherwise): every phone and e-mail the publisher released
+    on this permit, with its role. Phones follow the permit contact vocabulary: role owner /
+    applicant / contractor when the key name, the publisher or a role column states it, else
+    "unknown" (served, never promoted to an owner phone). E-mails take their role from the key name,
+    else "unknown"; a value without the shape local@domain.tld is served with valid=false.
+    """
+    people_fields_published: Dict[str, str]
+    """PEOPLE DATA (account required; absent otherwise): the publisher's own owner / applicant /
+    contact / agent fields on this permit (names, mailing addresses, phones, e-mails), verbatim,
+    keyed by the publisher's field name.
+    """
 
 
 class _DeedRequired(TypedDict):
@@ -751,7 +1245,7 @@ class RiskAssessmentIdentityGate(TypedDict):
     note: Optional[str]
 
 
-class RiskAssessment(TypedDict):
+class _RiskAssessmentRequired(TypedDict):
     flood_zone: Optional[str]
     is_sfha: Optional[bool]
     is_sfha_basis: str
@@ -764,7 +1258,14 @@ class RiskAssessment(TypedDict):
     identity_gate: RiskAssessmentIdentityGate
 
 
-class Contractor(TypedDict):
+class RiskAssessment(_RiskAssessmentRequired, total=False):
+    canonical_id: str
+    """Canonical id (state FIPS : county FIPS : county parcel id) of the parcel the panel was read for,
+    also when the request used a UUID.
+    """
+
+
+class _ContractorRequired(TypedDict):
     contractor_name_normalized: Optional[str]
     contractor_license: Optional[str]
     permit_count: Optional[int]
@@ -773,6 +1274,9 @@ class Contractor(TypedDict):
     county_count: Optional[int]
     total_permit_value: Optional[int]
     avg_permit_value: Optional[float]
+    """total_permit_value / permit_count (#558); see avg_valued_permit_value for the mean over permits
+    with a recorded cost.
+    """
     first_permit_date: Optional[str]
     last_permit_date: Optional[str]
     active_years: Optional[int]
@@ -780,7 +1284,25 @@ class Contractor(TypedDict):
     states_list: Optional[str]
     """Comma-delimited 2-letter state codes."""
     contractor_rank: Optional[int]
-    """National rank, 1 = highest activity."""
+    """Contiguous position in this filtered, rank-ordered list (offset + position);
+    contractor_rank_stored is the producer's national rank.
+    """
+
+
+class Contractor(_ContractorRequired, total=False):
+    contractor_name_raw: str
+    """The stored name when stray leading/trailing punctuation was trimmed."""
+    contractor_rank_stored: Optional[int]
+    """The producer's rank over its own universe (includes names this list filters out)."""
+    avg_valued_permit_value: Optional[float]
+    """The producer's mean over permits with a recorded positive cost."""
+    valued_permit_count_implied: Optional[int]
+    """total_permit_value / avg_valued_permit_value."""
+    avg_permit_value_basis: Literal["total_over_permit_count", "no_recorded_cost", "no_permit_count"]
+    county_count_raw: Optional[int]
+    """The stored 0 when county_count is served null (no source permit carried a county)."""
+    county_count_basis: Literal["stored", "county_fips_missing_on_permits", "unavailable"]
+    state_count_basis: Literal["geography_unavailable"]
 
 
 class EntityOwnedParcel(TypedDict):
@@ -937,25 +1459,33 @@ class PortfolioOwner(TypedDict):
 
 
 class Webhook(TypedDict, total=False):
+    """One webhook endpoint, as returned by GET /webhooks (each item) and GET /webhooks/{id}."""
     id: str
     url: str
     """Customer endpoint. Must be https://."""
     secret_prefix: str
-    """First 14 chars of the secret (whsec_ + 8 hex). Use to identify the webhook in your dashboard;
-    full secret is shown only at create time.
+    """First 14 characters of the secret (`whsec_` + 8 hex). Identifies the endpoint; the full secret
+    is shown only in the create response.
     """
     event_types: List[Literal["parcel.sold", "parcel.permit_filed", "parcel.owner_changed"]]
     filter_kind: Literal["parcel_ids", "state_fips", "county_fips"]
     filter_value: WebhookFilter
     description: Optional[str]
     is_active: bool
+    """false after DELETE (a soft disable)."""
     created_at: str
     disabled_at: Optional[str]
     disabled_reason: Optional[str]
+    """`user` when disabled with DELETE; null while active."""
     deliveries_attempted: int
     deliveries_succeeded: int
     last_delivery_at: Optional[str]
     last_success_at: Optional[str]
+    identity_status: Literal["canonical", "legacy_bare_parcel_ids"]
+    """parcel_ids endpoints only. `legacy_bare_parcel_ids`: the endpoint was created before 2026-09-22
+    with bare parcel numbers, and those that do not name exactly one parcel are not matched;
+    recreate it with canonical ids.
+    """
 
 
 class WebhookFilterVariant1(TypedDict):
@@ -983,7 +1513,9 @@ class _WebhookCreateRequired(TypedDict):
     url: str
     """Customer endpoint. https:// only."""
     event_types: List[Literal["parcel.sold", "parcel.permit_filed", "parcel.owner_changed"]]
-    """Event types to subscribe to. NOTE: only parcel.sold is live in v1.0; others 501."""
+    """Event types to subscribe to. All three event types are live: create accepts each of them and
+    PropRaven emits each of them.
+    """
     filter_kind: Literal["parcel_ids", "state_fips", "county_fips"]
     filter_value: WebhookFilter
 
@@ -1005,21 +1537,28 @@ class WebhookCreated(_WebhookCreatedRequired, total=False):
     url: str
     """Customer endpoint. Must be https://."""
     secret_prefix: str
-    """First 14 chars of the secret (whsec_ + 8 hex). Use to identify the webhook in your dashboard;
-    full secret is shown only at create time.
+    """First 14 characters of the secret (`whsec_` + 8 hex). Identifies the endpoint; the full secret
+    is shown only in the create response.
     """
     event_types: List[Literal["parcel.sold", "parcel.permit_filed", "parcel.owner_changed"]]
     filter_kind: Literal["parcel_ids", "state_fips", "county_fips"]
     filter_value: WebhookFilter
     description: Optional[str]
     is_active: bool
+    """false after DELETE (a soft disable)."""
     created_at: str
     disabled_at: Optional[str]
     disabled_reason: Optional[str]
+    """`user` when disabled with DELETE; null while active."""
     deliveries_attempted: int
     deliveries_succeeded: int
     last_delivery_at: Optional[str]
     last_success_at: Optional[str]
+    identity_status: Literal["canonical", "legacy_bare_parcel_ids"]
+    """parcel_ids endpoints only. `legacy_bare_parcel_ids`: the endpoint was created before 2026-09-22
+    with bare parcel numbers, and those that do not name exactly one parcel are not matched;
+    recreate it with canonical ids.
+    """
 
 
 class WebhookQuota(TypedDict):
@@ -1031,20 +1570,35 @@ class WebhookQuota(TypedDict):
 
 class WebhookDelivery(TypedDict, total=False):
     id: str
+    """Delivery id; sent as the `X-PropRaven-Delivery-Id` header on every attempt."""
     event_id: str
     """Deterministic event identifier — sha256(source || pk || event_type). Idempotent re-deliveries
     share this.
     """
     event_type: Literal["parcel.sold", "parcel.permit_filed", "parcel.owner_changed"]
     event_occurred_at: str
-    status: Literal["pending", "in_flight", "succeeded", "failed", "dead_lettered"]
+    status: Literal["pending", "in_flight", "delivered", "dead_lettered", "failed"]
+    """`pending` = queued or waiting for its next retry (`next_attempt_at`); `in_flight` = being sent,
+    or the outcome of a send is unknown (network error or timeout) and it is held for
+    reconciliation, not retried automatically; `delivered` = your endpoint answered 2xx;
+    `dead_lettered` = all 8 attempts got non-2xx, or the send was refused before dispatch (re-queue
+    with the retry route); `failed` = legacy value the current dispatcher never sets (still accepted
+    by the retry route).
+    """
     attempts: int
+    """Attempts made so far (at most 8)."""
     last_attempt_at: Optional[str]
     next_attempt_at: Optional[str]
     last_response_status: Optional[int]
+    """HTTP status your endpoint returned on the last attempt; null when no status came back."""
     last_response_body: Optional[str]
-    """Truncated to ~1KB."""
+    """Never your endpoint's body: after any attempt that got an HTTP status back it is the fixed text
+    `[redacted: response body not persisted]`; null before the first such attempt.
+    """
     last_error: Optional[str]
+    """Why the last send did not complete (for example `Delivery outcome unknown; reconciliation
+    required`); null otherwise.
+    """
     dead_lettered_at: Optional[str]
     created_at: str
 
@@ -1052,25 +1606,54 @@ class WebhookDelivery(TypedDict, total=False):
 class _ParcelSoldEventRequired(TypedDict):
     event_type: Literal["parcel.sold"]
     event_id: str
-    """Deterministic. Use for idempotency."""
+    """Deterministic (sha256 of source, record id and event type). A retry re-sends the same event_id:
+    de-duplicate on it.
+    """
     occurred_at: str
+    """The record's own date when it has one, else the time PropRaven ingested it; see
+    occurred_at_basis.
+    """
+    occurred_at_basis: Literal["recording_date", "sale_date", "ingested_at"]
+    """Which column dated the event."""
     delivery_attempt: int
-    """Starts at 1; increments on retry."""
+    """Starts at 1; increments on every retry (equals the X-PropRaven-Attempt header)."""
     parcel_id: str
-    """Composite county_fips:parcel_id."""
-    state_fips: str
-    county_fips: str
+    """The county assessor's parcel number the record was matched to (e.g. `12104406`). County-scoped,
+    NOT unique nationally and not `county:parcel`: identify the parcel with state_fips + county_fips
+    + parcel_id, or with canonical_id.
+    """
+    state_fips: Optional[str]
+    """2-digit state FIPS of the record; null when the publisher gave none."""
+    county_fips: Optional[str]
+    """3-digit county FIPS of the record as published (a 5-digit value is cut to its last 3); null when
+    absent. Placeholders such as `000` are passed through, not repaired.
+    """
 
 
 class ParcelSoldEvent(_ParcelSoldEventRequired, total=False):
+    canonical_id: str
+    """Parcel-scoped endpoints only: the watched parcel this event matched,
+    `state_fips:county_fips:parcel_id`. Absent on state/county endpoints.
+    """
+    match_basis: Optional[Literal["state_county_parcel_id", "state_unique_parcel_id"]]
+    """Parcel-scoped endpoints only (with canonical_id): `state_county_parcel_id` = the record's own
+    county matched; `state_unique_parcel_id` = the record's county was unknown and the parcel number
+    is unique in the state.
+    """
     sale_date: Optional[str]
     sale_price_usd: Optional[float]
     """May be null in non-disclosure states (KS, MS, TX, UT, WY, etc.)."""
     grantor: Optional[str]
     grantee: Optional[str]
     recorded_date: Optional[str]
+    is_arm_length: Optional[bool]
+    """Arm's-length flag from the deed record. parcel.sold fires only when this is not false (true or
+    null) and sale_price_usd > 0.
+    """
+    document_type: Optional[str]
+    """Deed/document classification (e.g., Warranty Deed)."""
     source_run_id: Optional[str]
-    """PropRaven ingest run that surfaced this event."""
+    """Reserved for the PropRaven ingest run; null today."""
 
 
 class AutocompleteResultOwnerNameSearch(TypedDict):
@@ -1103,6 +1686,7 @@ class AutocompleteLocation(TypedDict, total=False):
     name: str
     type: Literal["city"]
     state: str
+    """USPS 2-letter state code (e.g. "NC")."""
     city: str
     lat: Optional[float]
     lng: Optional[float]
@@ -1115,6 +1699,7 @@ class _AutocompleteParcelRequired(TypedDict):
     city: Optional[str]
     state_fips: str
     state: Optional[str]
+    """USPS 2-letter state code of `state_fips` (e.g. "NC")."""
     county_fips: str
     owner_name: Optional[str]
     latitude: Optional[float]
@@ -1140,7 +1725,7 @@ class AutocompleteAddress(TypedDict):
     east: Optional[float]
 
 
-class FullSearchResultResultsItem(TypedDict):
+class _FullSearchResultResultsItemRequired(TypedDict):
     parcel_id: str
     """PropRaven parcel UUID (not the county APN; see `apn`). Pass it to GET /parcels/{id}."""
     apn: Optional[str]
@@ -1153,6 +1738,17 @@ class FullSearchResultResultsItem(TypedDict):
     total_value: Optional[int]
     latitude: Optional[float]
     longitude: Optional[float]
+
+
+class FullSearchResultResultsItem(_FullSearchResultResultsItemRequired, total=False):
+    fanout: Dict[str, Any]
+    """Present only on a row that heads a NY-style fan-out family (one parcel filed under several
+    county FIPS, #552). `record_basis` is `home_county` (the row's point lies in its own county box)
+    or `possible_fanout_copy` (no home row was in the result; `likely_county` names the county the
+    point falls in). `copies_suppressed`, their county FIPS and ids list every copy folded onto this
+    row. Served county_fips and values are never rewritten; a copy's sale price equal to its
+    assessed value is listed under `value_flags` with the raw value.
+    """
 
 
 class FullSearchResultWarningsItem(TypedDict):
@@ -1174,6 +1770,12 @@ class _FullSearchResultRequired(TypedDict):
 class FullSearchResult(_FullSearchResultRequired, total=False):
     warnings: List[FullSearchResultWarningsItem]
     total_is_capped: bool
+    fanout_collapse: Dict[str, Any]
+    """Present only when fan-out copies were collapsed (#552): the number of copies suppressed, the
+    families and `complete`; `complete: false` with `copies_suppressed: null` when the check could
+    not run (the totals then include any copies). The witness is the county extent table
+    (county_bbox.json), never the served county_fips.
+    """
 
 
 class ParcelGeoJSON(TypedDict):
@@ -1360,8 +1962,8 @@ class ParcelDossier(TypedDict, total=False):
     meta: ParcelDossierMeta
     """Dossier-level provenance and pricing."""
     people_fields: PeopleFieldsWithheld
-    """Present only when the buyer has no account (wallet-only x402 or credit token): the people fields
-    in this dossier were withheld.
+    """Legacy marker: since 2026-10-09 every paid dossier carries its people fields, so this is absent;
+    it would mean the people fields in this dossier were withheld.
     """
 
 
@@ -1447,7 +2049,7 @@ class TrafficStationHistory(_TrafficStationHistoryRequired, total=False):
     """Year-keyed historical counts (newest last)."""
 
 
-class CountyDetailMarketStatsItem(TypedDict):
+class _CountyDetailMarketStatsItemRequired(TypedDict):
     county_fips: str
     state_fips: str
     quarter: Optional[str]
@@ -1459,6 +2061,11 @@ class CountyDetailMarketStatsItem(TypedDict):
     avg_dom: Optional[float]
     """Average days on market."""
     refreshed_at: Optional[str]
+
+
+class CountyDetailMarketStatsItem(_CountyDetailMarketStatsItemRequired, total=False):
+    under_review: List[Optional[str]]
+    stale_quarter: Optional[bool]
 
 
 class CountyDetailDataProvenanceMarket(TypedDict):
@@ -1527,8 +2134,8 @@ class MarketFlipsRow(TypedDict):
     total_profit: Optional[int]
 
 
-class OwnerTransaction(TypedDict, total=False):
-    document_number: str
+class OwnerTransaction(TypedDict):
+    document_number: Optional[str]
     recording_date: Optional[str]
     sale_date: Optional[str]
     document_type: Optional[str]
@@ -1567,17 +2174,40 @@ class AccountUsage(_AccountUsageRequired, total=False):
 class _ParcelOwnerChangedEventRequired(TypedDict):
     event_type: Literal["parcel.owner_changed"]
     event_id: str
-    """Deterministic. Use for idempotency."""
+    """Deterministic (sha256 of source, record id and event type). A retry re-sends the same event_id:
+    de-duplicate on it.
+    """
     occurred_at: str
+    """The record's own date when it has one, else the time PropRaven ingested it; see
+    occurred_at_basis.
+    """
+    occurred_at_basis: Literal["recording_date", "sale_date", "ingested_at"]
+    """Which column dated the event."""
     delivery_attempt: int
-    """Starts at 1; increments on retry."""
+    """Starts at 1; increments on every retry (equals the X-PropRaven-Attempt header)."""
     parcel_id: str
-    """Composite county_fips:parcel_id."""
-    state_fips: str
-    county_fips: str
+    """The county assessor's parcel number the record was matched to (e.g. `12104406`). County-scoped,
+    NOT unique nationally and not `county:parcel`: identify the parcel with state_fips + county_fips
+    + parcel_id, or with canonical_id.
+    """
+    state_fips: Optional[str]
+    """2-digit state FIPS of the record; null when the publisher gave none."""
+    county_fips: Optional[str]
+    """3-digit county FIPS of the record as published (a 5-digit value is cut to its last 3); null when
+    absent. Placeholders such as `000` are passed through, not repaired.
+    """
 
 
 class ParcelOwnerChangedEvent(_ParcelOwnerChangedEventRequired, total=False):
+    canonical_id: str
+    """Parcel-scoped endpoints only: the watched parcel this event matched,
+    `state_fips:county_fips:parcel_id`. Absent on state/county endpoints.
+    """
+    match_basis: Optional[Literal["state_county_parcel_id", "state_unique_parcel_id"]]
+    """Parcel-scoped endpoints only (with canonical_id): `state_county_parcel_id` = the record's own
+    county matched; `state_unique_parcel_id` = the record's county was unknown and the parcel number
+    is unique in the state.
+    """
     recorded_date: Optional[str]
     document_type: Optional[str]
     """Deed/document classification (e.g., Warranty Deed, Quitclaim Deed, Trust Transfer)."""
@@ -1591,25 +2221,48 @@ class ParcelOwnerChangedEvent(_ParcelOwnerChangedEventRequired, total=False):
     parcel.sold ALSO receive that event.
     """
     source_run_id: Optional[str]
-    """PropRaven ingest run that surfaced this event."""
+    """Reserved for the PropRaven ingest run; null today."""
 
 
 class _ParcelPermitFiledEventRequired(TypedDict):
     event_type: Literal["parcel.permit_filed"]
     event_id: str
-    """Deterministic. Use for idempotency."""
+    """Deterministic (sha256 of source, record id and event type). A retry re-sends the same event_id:
+    de-duplicate on it.
+    """
     occurred_at: str
+    """The record's own date when it has one, else the time PropRaven ingested it; see
+    occurred_at_basis.
+    """
+    occurred_at_basis: Literal["filed_date", "issued_date", "curated_at"]
+    """Which column dated the event."""
     delivery_attempt: int
-    """Starts at 1; increments on retry."""
+    """Starts at 1; increments on every retry (equals the X-PropRaven-Attempt header)."""
     parcel_id: str
-    """Composite county_fips:parcel_id."""
-    state_fips: str
-    county_fips: str
+    """The county assessor's parcel number the record was matched to (e.g. `12104406`). County-scoped,
+    NOT unique nationally and not `county:parcel`: identify the parcel with state_fips + county_fips
+    + parcel_id, or with canonical_id.
+    """
+    state_fips: Optional[str]
+    """2-digit state FIPS of the record; null when the publisher gave none."""
+    county_fips: Optional[str]
+    """3-digit county FIPS of the record as published (a 5-digit value is cut to its last 3); null when
+    absent. Placeholders such as `000` are passed through, not repaired.
+    """
     permit_id: str
     """PropRaven internal permit id (stable across re-ingests)."""
 
 
 class ParcelPermitFiledEvent(_ParcelPermitFiledEventRequired, total=False):
+    canonical_id: str
+    """Parcel-scoped endpoints only: the watched parcel this event matched,
+    `state_fips:county_fips:parcel_id`. Absent on state/county endpoints.
+    """
+    match_basis: Optional[Literal["state_county_parcel_id", "state_unique_parcel_id"]]
+    """Parcel-scoped endpoints only (with canonical_id): `state_county_parcel_id` = the record's own
+    county matched; `state_unique_parcel_id` = the record's county was unknown and the parcel number
+    is unique in the state.
+    """
     permit_number: Optional[str]
     """Jurisdiction-issued permit number."""
     permit_type: Optional[str]
@@ -1627,7 +2280,7 @@ class ParcelPermitFiledEvent(_ParcelPermitFiledEventRequired, total=False):
     jurisdiction_id: Optional[str]
     """PropRaven jurisdiction id; join to /v1/jurisdictions."""
     source_run_id: Optional[str]
-    """PropRaven ingest run that surfaced this event."""
+    """Reserved for the PropRaven ingest run; null today."""
 
 
 class X402PaymentRequiredAcceptsItemExtra(TypedDict, total=False):
@@ -1787,8 +2440,7 @@ class Lead(_LeadRequired, total=False):
     """
 
 
-class LeadFeedPreviewGeo(TypedDict):
-    """The resolved request geography and filters."""
+class _LeadFeedPreviewGeoRequired(TypedDict):
     state: str
     state_fips: str
     county_fips: Optional[str]
@@ -1797,6 +2449,11 @@ class LeadFeedPreviewGeo(TypedDict):
     value_max: Optional[int]
     mail_ready: bool
     limit: int
+
+
+class LeadFeedPreviewGeo(_LeadFeedPreviewGeoRequired, total=False):
+    """The resolved request geography and filters."""
+    tax_delinquent: bool
 
 
 class _LeadFeedPreviewRequired(TypedDict):
@@ -1824,6 +2481,7 @@ class LeadFeedPreview(_LeadFeedPreviewRequired, total=False):
     """Present only when a known data gap explains an empty result (e.g. the owner-portfolio rollup's
     unpopulated state columns). Nothing is charged in that case.
     """
+    tax_delinquency_filter: TaxDelinquencyFilter
 
 
 class LeadFeedGeo(TypedDict, total=False):
@@ -1836,6 +2494,7 @@ class LeadFeedGeo(TypedDict, total=False):
     value_max: Optional[int]
     limit: int
     mail_ready: bool
+    tax_delinquent: bool
 
 
 class LeadFeed(TypedDict, total=False):
@@ -1859,6 +2518,7 @@ class LeadFeed(TypedDict, total=False):
     """Absent on an unpaid empty result (count 0)."""
     leads: List[Lead]
     """The delivered, UNMASKED leads."""
+    tax_delinquency_filter: TaxDelinquencyFilter
 
 
 class ProblemErrorsItem(TypedDict):
@@ -1881,9 +2541,10 @@ class Problem(_ProblemRequired, total=False):
     invalid_parameter, authentication_required, account_required, monthly_cap_reached,
     query_timeout, not_found, method_not_allowed); `detail` is human-readable and never contains
     database or driver text. Validation failures add `errors: [{param, message}]`. `request_id`
-    identifies the request for support. Per-code members (e.g. `reason`, `retry_after`, `used` /
-    `limit` / `plan` / `upgrade`, `allow`) sit beside the core members. Exception: an x402 `402
-    Payment Required` keeps the x402 protocol envelope (`x402Version`, `accepts`).
+    identifies the request for support; every error response carries it, and the same value in the
+    `X-Request-Id` header. Per-code members (e.g. `reason`, `retry_after`, `used` / `limit` / `plan`
+    / `upgrade`, `allow`) sit beside the core members. Exception: an x402 `402 Payment Required`
+    keeps the x402 protocol envelope (`x402Version`, `accepts`).
     """
     reason: str
     """Finer reason for `code`, e.g. people_data_requires_account."""
@@ -1906,8 +2567,8 @@ class PeopleFieldsWithheld(TypedDict):
     entity principals, recorded-document party names and addresses (grantor/grantee, buyer/seller,
     prior/new owner), permit applicant names and the resolved `owner_contact` block. Withheld keys
     are kept and set to null (lists of people records become []), so the record's shape does not
-    change. Payment alone (an x402 `X-PAYMENT` header or a prepaid `X-CREDIT-TOKEN`) is not an
-    account: send an API key (`Authorization: Bearer pz_...`) or call from a signed-in session.
+    change. Send an API key (`Authorization: Bearer pz_...`) or call from a signed-in session; on
+    the paid products a settled x402 payment or a prepaid credit debit also delivers people data.
     """
     status: Literal["withheld"]
     code: Literal["account_required"]
@@ -2011,10 +2672,7 @@ class OwnerCardContactEntitySource(TypedDict):
     url: Optional[str]
 
 
-class OwnerCardContactEntity(TypedDict):
-    """Secretary of State principals (entity type, status, registered agent, officers) when the owner
-    is an entity.
-    """
+class _OwnerCardContactEntityRequired(TypedDict):
     entity_type: str
     status: Optional[str]
     state_of_formation: Optional[str]
@@ -2025,6 +2683,14 @@ class OwnerCardContactEntity(TypedDict):
     as_of: Optional[str]
     as_of_basis: Optional[str]
     grade: str
+
+
+class OwnerCardContactEntity(_OwnerCardContactEntityRequired, total=False):
+    """Secretary of State principals (entity type, status, registered agent, officers) when the owner
+    is an entity. When the parcel record carries no registered agent or officers, they come from the
+    single matching Secretary of State filing (`principals_basis: sos_registry`).
+    """
+    principals_basis: Literal["parcel_record", "sos_registry"]
 
 
 class OwnerCardContactOtherAddressesItemAddress(TypedDict):
@@ -2112,7 +2778,8 @@ class _OwnerCardContactRequired(TypedDict):
     """Parcel mode: a latest-deed grantee address naming the same owner, when it differs."""
     entity: OwnerCardContactEntity
     """Secretary of State principals (entity type, status, registered agent, officers) when the owner
-    is an entity.
+    is an entity. When the parcel record carries no registered agent or officers, they come from the
+    single matching Secretary of State filing (`principals_basis: sos_registry`).
     """
     phones: List[Dict[str, Any]]
     """OWNER phones (owner role only) published on a building permit filed in the current owner's era
@@ -2124,13 +2791,19 @@ class _OwnerCardContactRequired(TypedDict):
     (timeout, no acquisition date, no owner name).
     """
     emails: List[Dict[str, Any]]
+    """OWNER e-mails a building permit published (a key naming the owner's e-mail, e.g. Mecklenburg
+    owner_email_address), on a permit filed in the current owner's era whose owner name matches the
+    current owner (grade C): { email, valid, basis: permit_owner_email, email_key, permit_ref,
+    source, as_of, as_of_basis, grade }.
+    """
     none_published: List[Optional[Literal["phone", "email"]]]
     hidden_low_confidence: float
     people_on_permits: List[Dict[str, Any]]
-    """Applicant and contractor phones on the parcel's permits (name mode: across the side-read
-    parcels), newest first, one per (role, number), at most 10: { role: applicant|contractor,
-    role_basis, name, e164, display, ext, phone_raw, permit_ref, era:
-    current_owner|prior_owner|unknown, source, as_of, as_of_basis, grade }. Never the owner's phone.
+    """Applicant, contractor and unknown-role phones on the parcel's permits (name mode: across the
+    side-read parcels), newest first, one per (role, number), at most 10: { role:
+    applicant|contractor|unknown (the publisher states no role), role_basis, name, e164, display,
+    ext, phone_raw, permit_ref, era: current_owner|prior_owner|unknown, source, as_of, as_of_basis,
+    grade }. Never the owner's phone.
     """
     people_on_permits_status: Literal["listed", "none_published", "not_checked"]
     """none_published only after the parcel's permits were read in full; not_checked when the read did
@@ -2148,6 +2821,21 @@ class OwnerCardContact(_OwnerCardContactRequired, total=False):
     """Name mode: the owner's distinct mailing addresses, most-cited first."""
     phone_scope: Dict[str, Any]
     """Name mode: { parcels_checked, parcels_considered }."""
+    email_status: Literal["published", "none_published", "not_checked"]
+    """none_published is claimed only after the permit lookup ran (as phone_status); before 2026-10-09
+    the card claimed "no email" without looking.
+    """
+    registry_filings: List[Dict[str, Any]]
+    """Secretary of State filings whose registry name equals the owner's exactly (public.sos_name_key;
+    FL Sunbiz today): { registry, doc_number, name, status, filing_type, file_date,
+    state_of_formation, principal_address, mailing_address, registered_agent { name, type, address
+    }, principals [{ title, role, party_type, name, address }], as_of, source, grade }. Grade B for
+    the one filing under the name in the parcel's own state, else C.
+    """
+    registry_status: Literal["listed", "none_found", "not_an_entity", "not_checked"]
+    """not_an_entity: the owner name reads as an individual and is never looked up in a business
+    registry.
+    """
 
 
 class OwnerCard(TypedDict):
@@ -2159,6 +2847,2089 @@ class OwnerCard(TypedDict):
     owner: OwnerCardOwner
     contact: OwnerCardContact
     note: str
+
+
+class TaxDelinquencyRecord(TypedDict):
+    """One property-tax delinquency record as the publishing treasurer / tax collector lists it, placed
+    on this parcel by the publisher's own parcel id. Never served past `expires_on`.
+    """
+    record_uid: str
+    source_id: str
+    """ops.sources id (`tax_<st>_<jurisdiction>_<dataset>`)."""
+    jurisdiction_name: str
+    publisher: str
+    publisher_parcel_id: str
+    """The parcel id exactly as the publisher prints it."""
+    status: Literal["in_sale", "delinquent", "sold", "redeemed"]
+    """Only in_sale and delinquent count as delinquent."""
+    status_raw: Optional[str]
+    payment_plan: Optional[bool]
+    """Only where the publisher says so; null = not published."""
+    bankruptcy: Optional[bool]
+    """Only where the publisher says so; null = not published."""
+    tax_years: Optional[List[int]]
+    first_tax_year: Optional[int]
+    last_tax_year: Optional[int]
+    years_delinquent: Optional[int]
+    amount_due: Optional[float]
+    """Null when the list publishes no amount; what it is is `amount_basis`."""
+    amount_basis: Optional[Literal["total_due", "principal", "lien_amount", "minimum_bid", "judgment"]]
+    sale_kind: Optional[Literal["tax_lien_sale", "tax_deed_sale", "sheriff_sale", "scavenger_sale", "certificate_sale"]]
+    sale_date: Optional[str]
+    publisher_as_of: str
+    """The publisher's own date for the list."""
+    as_of: str
+    """When PropRaven pulled the list."""
+    expires_on: str
+    match_method: Literal["parcel_id_exact", "parcel_id_normalized", "address_exact"]
+    match_confidence: float
+    source_url: str
+
+
+class TaxDelinquencyCoverage(TypedDict):
+    """A delinquency list that covers the parcel's county. `list_scope` says what absence from the list
+    means.
+    """
+    source_id: str
+    jurisdiction_name: str
+    publisher: str
+    dataset_kind: Literal["delinquency", "lien_sale_list", "tax_sale_list", "scavenger_list", "foreclosure_list"]
+    list_scope: str
+    publisher_as_of: str
+    as_of: str
+    expires_on: str
+    source_url: str
+
+
+class _ParcelTaxStatusRequired(TypedDict):
+    parcel_id: str
+    status: Literal["listed", "not_listed", "not_covered", "unavailable"]
+    """listed = on at least one unexpired list; not_listed = an unexpired list covers the county and
+    this parcel is not on it (read `list_scope`: never proof of payment); not_covered = no list for
+    the county; unavailable = the layer could not be read.
+    """
+    coverage: List[TaxDelinquencyCoverage]
+    records: List[TaxDelinquencyRecord]
+    """in_sale, delinquent, sold, redeemed, then amount_due descending; at most 50."""
+    truncated: bool
+    note: str
+
+
+class ParcelTaxStatus(_ParcelTaxStatusRequired, total=False):
+    people_fields: Dict[str, Any]
+    """Present when the records were withheld by the lookup meter: `code` lookup_cap_reached or
+    lookup_meter_unavailable (nothing charged).
+    """
+
+
+class TaxDelinquencyFilter(TypedDict):
+    """Present when `tax_delinquent=true` was applied."""
+    applied: bool
+    statuses: List[str]
+    note: str
+
+
+class IntelligenceRunQuery(TypedDict):
+    as_of: str
+    knowledge_cutoff: str
+
+
+class IntelligenceRunGroupsMarketItemMetricsValueValueVariant1(TypedDict):
+    numerator: str
+    denominator: str
+
+
+class IntelligenceRunGroupsMarketItemMetricsValue(TypedDict):
+    value: Optional[IntelligenceRunGroupsMarketItemMetricsValueValueVariant1]
+    unit: str
+
+
+class IntelligenceRunGroupsMarketItemContextRequestedScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceRunGroupsMarketItemContextActualScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceRunGroupsMarketItemContextQueryVariant1(TypedDict):
+    as_of: str
+    knowledge_cutoff: str
+
+
+class IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant1Window
+
+
+class IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant3Current
+    previous: IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant3Previous
+
+
+class IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant4Flow
+
+
+class IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant1Window
+
+
+class IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant3Current
+    previous: IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant3Previous
+
+
+class IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant4Flow
+
+
+class IntelligenceRunGroupsMarketItemContext(TypedDict):
+    input_kind: Literal["observed", "user_assumptions", "unavailable"]
+    requested_scope: Optional[IntelligenceRunGroupsMarketItemContextRequestedScopeVariant1]
+    actual_scope: Optional[IntelligenceRunGroupsMarketItemContextActualScopeVariant1]
+    query: Optional[IntelligenceRunGroupsMarketItemContextQueryVariant1]
+    period: Optional[Union[IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant1, IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant2, IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant3, IntelligenceRunGroupsMarketItemContextPeriodVariant1Variant4]]
+    metric_periods: Dict[str, Union[IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant1, IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant2, IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant3, IntelligenceRunGroupsMarketItemContextMetricPeriodsValueVariant4]]
+    latest_observation_at: Optional[str]
+    source_as_of: Optional[str]
+    source_vintage: Optional[str]
+    history_complete: Optional[bool]
+
+
+class IntelligenceRunGroupsMarketItem(TypedDict):
+    definition: str
+    status: Literal["available", "partial", "insufficient_data", "unavailable", "stale", "error"]
+    reasons: List[str]
+    metrics: Dict[str, IntelligenceRunGroupsMarketItemMetricsValue]
+    counts: Dict[str, float]
+    exclusions: Dict[str, float]
+    evidence_ids: List[str]
+    context: IntelligenceRunGroupsMarketItemContext
+
+
+class IntelligenceRunGroupsSellerItemMetricsValueValueVariant1(TypedDict):
+    numerator: str
+    denominator: str
+
+
+class IntelligenceRunGroupsSellerItemMetricsValue(TypedDict):
+    value: Optional[IntelligenceRunGroupsSellerItemMetricsValueValueVariant1]
+    unit: str
+
+
+class IntelligenceRunGroupsSellerItemContextRequestedScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceRunGroupsSellerItemContextActualScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceRunGroupsSellerItemContextQueryVariant1(TypedDict):
+    as_of: str
+    knowledge_cutoff: str
+
+
+class IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant1Window
+
+
+class IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant3Current
+    previous: IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant3Previous
+
+
+class IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant4Flow
+
+
+class IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant1Window
+
+
+class IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant3Current
+    previous: IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant3Previous
+
+
+class IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant4Flow
+
+
+class IntelligenceRunGroupsSellerItemContext(TypedDict):
+    input_kind: Literal["observed", "user_assumptions", "unavailable"]
+    requested_scope: Optional[IntelligenceRunGroupsSellerItemContextRequestedScopeVariant1]
+    actual_scope: Optional[IntelligenceRunGroupsSellerItemContextActualScopeVariant1]
+    query: Optional[IntelligenceRunGroupsSellerItemContextQueryVariant1]
+    period: Optional[Union[IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant1, IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant2, IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant3, IntelligenceRunGroupsSellerItemContextPeriodVariant1Variant4]]
+    metric_periods: Dict[str, Union[IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant1, IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant2, IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant3, IntelligenceRunGroupsSellerItemContextMetricPeriodsValueVariant4]]
+    latest_observation_at: Optional[str]
+    source_as_of: Optional[str]
+    source_vintage: Optional[str]
+    history_complete: Optional[bool]
+
+
+class IntelligenceRunGroupsSellerItem(TypedDict):
+    definition: str
+    status: Literal["available", "partial", "insufficient_data", "unavailable", "stale", "error"]
+    reasons: List[str]
+    metrics: Dict[str, IntelligenceRunGroupsSellerItemMetricsValue]
+    counts: Dict[str, float]
+    exclusions: Dict[str, float]
+    evidence_ids: List[str]
+    context: IntelligenceRunGroupsSellerItemContext
+
+
+class IntelligenceRunGroupsOwnerItemMetricsValueValueVariant1(TypedDict):
+    numerator: str
+    denominator: str
+
+
+class IntelligenceRunGroupsOwnerItemMetricsValue(TypedDict):
+    value: Optional[IntelligenceRunGroupsOwnerItemMetricsValueValueVariant1]
+    unit: str
+
+
+class IntelligenceRunGroupsOwnerItemContextRequestedScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceRunGroupsOwnerItemContextActualScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceRunGroupsOwnerItemContextQueryVariant1(TypedDict):
+    as_of: str
+    knowledge_cutoff: str
+
+
+class IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant1Window
+
+
+class IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant3Current
+    previous: IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant3Previous
+
+
+class IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant4Flow
+
+
+class IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant1Window
+
+
+class IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant3Current
+    previous: IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant3Previous
+
+
+class IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant4Flow
+
+
+class IntelligenceRunGroupsOwnerItemContext(TypedDict):
+    input_kind: Literal["observed", "user_assumptions", "unavailable"]
+    requested_scope: Optional[IntelligenceRunGroupsOwnerItemContextRequestedScopeVariant1]
+    actual_scope: Optional[IntelligenceRunGroupsOwnerItemContextActualScopeVariant1]
+    query: Optional[IntelligenceRunGroupsOwnerItemContextQueryVariant1]
+    period: Optional[Union[IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant1, IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant2, IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant3, IntelligenceRunGroupsOwnerItemContextPeriodVariant1Variant4]]
+    metric_periods: Dict[str, Union[IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant1, IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant2, IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant3, IntelligenceRunGroupsOwnerItemContextMetricPeriodsValueVariant4]]
+    latest_observation_at: Optional[str]
+    source_as_of: Optional[str]
+    source_vintage: Optional[str]
+    history_complete: Optional[bool]
+
+
+class IntelligenceRunGroupsOwnerItem(TypedDict):
+    definition: str
+    status: Literal["available", "partial", "insufficient_data", "unavailable", "stale", "error"]
+    reasons: List[str]
+    metrics: Dict[str, IntelligenceRunGroupsOwnerItemMetricsValue]
+    counts: Dict[str, float]
+    exclusions: Dict[str, float]
+    evidence_ids: List[str]
+    context: IntelligenceRunGroupsOwnerItemContext
+
+
+class IntelligenceRunGroupsRedevelopmentItemMetricsValueValueVariant1(TypedDict):
+    numerator: str
+    denominator: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemMetricsValue(TypedDict):
+    value: Optional[IntelligenceRunGroupsRedevelopmentItemMetricsValueValueVariant1]
+    unit: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextRequestedScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextActualScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextQueryVariant1(TypedDict):
+    as_of: str
+    knowledge_cutoff: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant1Window
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant3Current
+    previous: IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant3Previous
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant4Flow
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant1Window
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant3Current
+    previous: IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant3Previous
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant4Flow
+
+
+class IntelligenceRunGroupsRedevelopmentItemContext(TypedDict):
+    input_kind: Literal["observed", "user_assumptions", "unavailable"]
+    requested_scope: Optional[IntelligenceRunGroupsRedevelopmentItemContextRequestedScopeVariant1]
+    actual_scope: Optional[IntelligenceRunGroupsRedevelopmentItemContextActualScopeVariant1]
+    query: Optional[IntelligenceRunGroupsRedevelopmentItemContextQueryVariant1]
+    period: Optional[Union[IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant1, IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant2, IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant3, IntelligenceRunGroupsRedevelopmentItemContextPeriodVariant1Variant4]]
+    metric_periods: Dict[str, Union[IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant1, IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant2, IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant3, IntelligenceRunGroupsRedevelopmentItemContextMetricPeriodsValueVariant4]]
+    latest_observation_at: Optional[str]
+    source_as_of: Optional[str]
+    source_vintage: Optional[str]
+    history_complete: Optional[bool]
+
+
+class IntelligenceRunGroupsRedevelopmentItem(TypedDict):
+    definition: str
+    status: Literal["available", "partial", "insufficient_data", "unavailable", "stale", "error"]
+    reasons: List[str]
+    metrics: Dict[str, IntelligenceRunGroupsRedevelopmentItemMetricsValue]
+    counts: Dict[str, float]
+    exclusions: Dict[str, float]
+    evidence_ids: List[str]
+    context: IntelligenceRunGroupsRedevelopmentItemContext
+
+
+class IntelligenceRunGroups(TypedDict):
+    market: List[IntelligenceRunGroupsMarketItem]
+    seller: List[IntelligenceRunGroupsSellerItem]
+    owner: List[IntelligenceRunGroupsOwnerItem]
+    redevelopment: List[IntelligenceRunGroupsRedevelopmentItem]
+
+
+class IntelligenceRun(TypedDict):
+    """Immutable descriptive calculation run with exact rational wire values. Calculation time is not
+    source freshness. Unknown values/dates remain null.
+    """
+    id: str
+    canonical_id: str
+    definition_version: str
+    query: IntelligenceRunQuery
+    computed_at: str
+    evidence_ids: List[str]
+    groups: IntelligenceRunGroups
+
+
+class IntelligenceHandoffQuery(TypedDict):
+    as_of: str
+    knowledge_cutoff: str
+
+
+class IntelligenceHandoffObservationsItem(TypedDict):
+    evidence_id: str
+    source_product: str
+    source_version: str
+    vintage: str
+    source_as_of: Optional[str]
+    observed_at: Optional[str]
+    captured_at: str
+    knowledge_basis: str
+    effective_time_basis: str
+    source_url: Optional[str]
+
+
+class IntelligenceHandoffComputedResultsMarketItemMetricsValueValueVariant1(TypedDict):
+    numerator: str
+    denominator: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemMetricsValue(TypedDict):
+    value: Optional[IntelligenceHandoffComputedResultsMarketItemMetricsValueValueVariant1]
+    unit: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextRequestedScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextActualScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextQueryVariant1(TypedDict):
+    as_of: str
+    knowledge_cutoff: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant1Window
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant3Current
+    previous: IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant3Previous
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant4Flow
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant1Window
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant3Current
+    previous: IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant3Previous
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant4Flow
+
+
+class IntelligenceHandoffComputedResultsMarketItemContext(TypedDict):
+    input_kind: Literal["observed", "user_assumptions", "unavailable"]
+    requested_scope: Optional[IntelligenceHandoffComputedResultsMarketItemContextRequestedScopeVariant1]
+    actual_scope: Optional[IntelligenceHandoffComputedResultsMarketItemContextActualScopeVariant1]
+    query: Optional[IntelligenceHandoffComputedResultsMarketItemContextQueryVariant1]
+    period: Optional[Union[IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant1, IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant2, IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant3, IntelligenceHandoffComputedResultsMarketItemContextPeriodVariant1Variant4]]
+    metric_periods: Dict[str, Union[IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant1, IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant2, IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant3, IntelligenceHandoffComputedResultsMarketItemContextMetricPeriodsValueVariant4]]
+    latest_observation_at: Optional[str]
+    source_as_of: Optional[str]
+    source_vintage: Optional[str]
+    history_complete: Optional[bool]
+
+
+class IntelligenceHandoffComputedResultsMarketItem(TypedDict):
+    definition: str
+    status: Literal["available", "partial", "insufficient_data", "unavailable", "stale", "error"]
+    reasons: List[str]
+    metrics: Dict[str, IntelligenceHandoffComputedResultsMarketItemMetricsValue]
+    counts: Dict[str, float]
+    exclusions: Dict[str, float]
+    evidence_ids: List[str]
+    context: IntelligenceHandoffComputedResultsMarketItemContext
+
+
+class IntelligenceHandoffComputedResultsSellerItemMetricsValueValueVariant1(TypedDict):
+    numerator: str
+    denominator: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemMetricsValue(TypedDict):
+    value: Optional[IntelligenceHandoffComputedResultsSellerItemMetricsValueValueVariant1]
+    unit: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextRequestedScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextActualScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextQueryVariant1(TypedDict):
+    as_of: str
+    knowledge_cutoff: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant1Window
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant3Current
+    previous: IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant3Previous
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant4Flow
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant1Window
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant3Current
+    previous: IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant3Previous
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant4Flow
+
+
+class IntelligenceHandoffComputedResultsSellerItemContext(TypedDict):
+    input_kind: Literal["observed", "user_assumptions", "unavailable"]
+    requested_scope: Optional[IntelligenceHandoffComputedResultsSellerItemContextRequestedScopeVariant1]
+    actual_scope: Optional[IntelligenceHandoffComputedResultsSellerItemContextActualScopeVariant1]
+    query: Optional[IntelligenceHandoffComputedResultsSellerItemContextQueryVariant1]
+    period: Optional[Union[IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant1, IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant2, IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant3, IntelligenceHandoffComputedResultsSellerItemContextPeriodVariant1Variant4]]
+    metric_periods: Dict[str, Union[IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant1, IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant2, IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant3, IntelligenceHandoffComputedResultsSellerItemContextMetricPeriodsValueVariant4]]
+    latest_observation_at: Optional[str]
+    source_as_of: Optional[str]
+    source_vintage: Optional[str]
+    history_complete: Optional[bool]
+
+
+class IntelligenceHandoffComputedResultsSellerItem(TypedDict):
+    definition: str
+    status: Literal["available", "partial", "insufficient_data", "unavailable", "stale", "error"]
+    reasons: List[str]
+    metrics: Dict[str, IntelligenceHandoffComputedResultsSellerItemMetricsValue]
+    counts: Dict[str, float]
+    exclusions: Dict[str, float]
+    evidence_ids: List[str]
+    context: IntelligenceHandoffComputedResultsSellerItemContext
+
+
+class IntelligenceHandoffComputedResultsOwnerItemMetricsValueValueVariant1(TypedDict):
+    numerator: str
+    denominator: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemMetricsValue(TypedDict):
+    value: Optional[IntelligenceHandoffComputedResultsOwnerItemMetricsValueValueVariant1]
+    unit: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextRequestedScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextActualScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextQueryVariant1(TypedDict):
+    as_of: str
+    knowledge_cutoff: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant1Window
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant3Current
+    previous: IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant3Previous
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant4Flow
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant1Window
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant3Current
+    previous: IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant3Previous
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant4Flow
+
+
+class IntelligenceHandoffComputedResultsOwnerItemContext(TypedDict):
+    input_kind: Literal["observed", "user_assumptions", "unavailable"]
+    requested_scope: Optional[IntelligenceHandoffComputedResultsOwnerItemContextRequestedScopeVariant1]
+    actual_scope: Optional[IntelligenceHandoffComputedResultsOwnerItemContextActualScopeVariant1]
+    query: Optional[IntelligenceHandoffComputedResultsOwnerItemContextQueryVariant1]
+    period: Optional[Union[IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant1, IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant2, IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant3, IntelligenceHandoffComputedResultsOwnerItemContextPeriodVariant1Variant4]]
+    metric_periods: Dict[str, Union[IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant1, IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant2, IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant3, IntelligenceHandoffComputedResultsOwnerItemContextMetricPeriodsValueVariant4]]
+    latest_observation_at: Optional[str]
+    source_as_of: Optional[str]
+    source_vintage: Optional[str]
+    history_complete: Optional[bool]
+
+
+class IntelligenceHandoffComputedResultsOwnerItem(TypedDict):
+    definition: str
+    status: Literal["available", "partial", "insufficient_data", "unavailable", "stale", "error"]
+    reasons: List[str]
+    metrics: Dict[str, IntelligenceHandoffComputedResultsOwnerItemMetricsValue]
+    counts: Dict[str, float]
+    exclusions: Dict[str, float]
+    evidence_ids: List[str]
+    context: IntelligenceHandoffComputedResultsOwnerItemContext
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemMetricsValueValueVariant1(TypedDict):
+    numerator: str
+    denominator: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemMetricsValue(TypedDict):
+    value: Optional[IntelligenceHandoffComputedResultsRedevelopmentItemMetricsValueValueVariant1]
+    unit: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextRequestedScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextActualScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextQueryVariant1(TypedDict):
+    as_of: str
+    knowledge_cutoff: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant1Window
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant3Current
+    previous: IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant3Previous
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant4Flow
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant1Window
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant3Current
+    previous: IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant3Previous
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant4Flow
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItemContext(TypedDict):
+    input_kind: Literal["observed", "user_assumptions", "unavailable"]
+    requested_scope: Optional[IntelligenceHandoffComputedResultsRedevelopmentItemContextRequestedScopeVariant1]
+    actual_scope: Optional[IntelligenceHandoffComputedResultsRedevelopmentItemContextActualScopeVariant1]
+    query: Optional[IntelligenceHandoffComputedResultsRedevelopmentItemContextQueryVariant1]
+    period: Optional[Union[IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant1, IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant2, IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant3, IntelligenceHandoffComputedResultsRedevelopmentItemContextPeriodVariant1Variant4]]
+    metric_periods: Dict[str, Union[IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant1, IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant2, IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant3, IntelligenceHandoffComputedResultsRedevelopmentItemContextMetricPeriodsValueVariant4]]
+    latest_observation_at: Optional[str]
+    source_as_of: Optional[str]
+    source_vintage: Optional[str]
+    history_complete: Optional[bool]
+
+
+class IntelligenceHandoffComputedResultsRedevelopmentItem(TypedDict):
+    definition: str
+    status: Literal["available", "partial", "insufficient_data", "unavailable", "stale", "error"]
+    reasons: List[str]
+    metrics: Dict[str, IntelligenceHandoffComputedResultsRedevelopmentItemMetricsValue]
+    counts: Dict[str, float]
+    exclusions: Dict[str, float]
+    evidence_ids: List[str]
+    context: IntelligenceHandoffComputedResultsRedevelopmentItemContext
+
+
+class IntelligenceHandoffComputedResults(TypedDict):
+    market: List[IntelligenceHandoffComputedResultsMarketItem]
+    seller: List[IntelligenceHandoffComputedResultsSellerItem]
+    owner: List[IntelligenceHandoffComputedResultsOwnerItem]
+    redevelopment: List[IntelligenceHandoffComputedResultsRedevelopmentItem]
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultMetricsValueValueVariant1(TypedDict):
+    numerator: str
+    denominator: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultMetricsValue(TypedDict):
+    value: Optional[IntelligenceHandoffUserAssumptionsVariant1ResultMetricsValueValueVariant1]
+    unit: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextRequestedScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextActualScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextQueryVariant1(TypedDict):
+    as_of: str
+    knowledge_cutoff: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant1Window
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant3Current
+    previous: IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant3Previous
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant4Flow
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant1Window
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant3Current
+    previous: IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant3Previous
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant4Flow
+
+
+class IntelligenceHandoffUserAssumptionsVariant1ResultContext(TypedDict):
+    input_kind: Literal["observed", "user_assumptions", "unavailable"]
+    requested_scope: Optional[IntelligenceHandoffUserAssumptionsVariant1ResultContextRequestedScopeVariant1]
+    actual_scope: Optional[IntelligenceHandoffUserAssumptionsVariant1ResultContextActualScopeVariant1]
+    query: Optional[IntelligenceHandoffUserAssumptionsVariant1ResultContextQueryVariant1]
+    period: Optional[Union[IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant1, IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant2, IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant3, IntelligenceHandoffUserAssumptionsVariant1ResultContextPeriodVariant1Variant4]]
+    metric_periods: Dict[str, Union[IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant1, IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant2, IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant3, IntelligenceHandoffUserAssumptionsVariant1ResultContextMetricPeriodsValueVariant4]]
+    latest_observation_at: Optional[str]
+    source_as_of: Optional[str]
+    source_vintage: Optional[str]
+    history_complete: Optional[bool]
+
+
+class IntelligenceHandoffUserAssumptionsVariant1Result(TypedDict):
+    definition: str
+    status: Literal["available", "partial", "insufficient_data", "unavailable", "stale", "error"]
+    reasons: List[str]
+    metrics: Dict[str, IntelligenceHandoffUserAssumptionsVariant1ResultMetricsValue]
+    counts: Dict[str, float]
+    exclusions: Dict[str, float]
+    evidence_ids: List[str]
+    context: IntelligenceHandoffUserAssumptionsVariant1ResultContext
+
+
+class IntelligenceHandoffUserAssumptionsVariant1(TypedDict):
+    id: str
+    run_id: str
+    parent_revision_id: Optional[str]
+    label: Literal["base", "downside", "upside"]
+    created_at: str
+    assumptions: Dict[str, Any]
+    result: IntelligenceHandoffUserAssumptionsVariant1Result
+
+
+class IntelligenceHandoff(TypedDict):
+    """Authorized retained results and optional user scenario; structured_only_not_sent. No model call,
+    external delivery or duplicate arithmetic.
+    """
+    version: Literal["investigation-handoff@1"]
+    canonical_id: str
+    run_id: str
+    query: IntelligenceHandoffQuery
+    observations: List[IntelligenceHandoffObservationsItem]
+    computed_results: IntelligenceHandoffComputedResults
+    user_assumptions: Optional[IntelligenceHandoffUserAssumptionsVariant1]
+    interpretations: List[str]
+    next_diligence: List[str]
+    delivery: Literal["structured_only_not_sent"]
+
+
+class IntelligenceScenarioInputAssumptionsCostsItem(TypedDict):
+    bucket: Literal["hard", "soft", "contingency", "carry", "other_nonland"]
+    amount: str
+    currency: str
+
+
+class IntelligenceScenarioInputAssumptions(TypedDict):
+    currency: str
+    gross_completed_sale: str
+    selling_costs: str
+    costs: List[IntelligenceScenarioInputAssumptionsCostsItem]
+    required_profit_dollars: str
+    fixed_acquisition_costs: str
+    acquisition_cost_rate: str
+    profit_mode: Literal["fixed_dollars"]
+    carry_mode: Literal["purchase_independent"]
+    input_source: Literal["user_input"]
+
+
+class _IntelligenceScenarioInputRequired(TypedDict):
+    run_id: str
+    label: Literal["base", "downside", "upside"]
+    assumptions: IntelligenceScenarioInputAssumptions
+
+
+class IntelligenceScenarioInput(_IntelligenceScenarioInputRequired, total=False):
+    """All five unique cost buckets and a matching currency are required; explicitly enter zero. No
+    inferred defaults. Only fixed-dollar profit and purchase-independent carry.
+    """
+    parent_revision_id: str
+
+
+class ZillowMetricRightsVariant1(TypedDict):
+    version: str
+    evidenceUrl: Optional[str]
+    expiresAt: Optional[str]
+
+
+class ZillowMetricVariantVariant1(TypedDict):
+    datasetKey: str
+    registryVersion: int
+    universe: str
+    frequency: Literal["monthly"]
+    smoothing: Literal["smoothed"]
+    seasonalAdjustment: Literal["sa", "not_stated"]
+
+
+class ZillowMetricGeographyVariant1(TypedDict):
+    providerId: str
+    name: str
+    type: Literal["country", "msa", "county", "zip"]
+
+
+class ZillowMetricMappingVariant1(TypedDict):
+    method: Literal["postal_zip", "county_fips", "verified_crosswalk", "explicit_provider_region"]
+    version: str
+    source: str
+    fallbackReason: Optional[str]
+
+
+class ZillowMetricSnapshotVariant1(TypedDict):
+    id: str
+    sha256: str
+    retrievedAt: str
+    acceptedAt: str
+    latestPeriod: str
+    stale: bool
+
+
+class _ZillowMetricAnnualChangeVariant1Required(TypedDict):
+    value: Optional[float]
+    unit: Literal["percent", "percentage_points", "days"]
+
+
+class ZillowMetricAnnualChangeVariant1(_ZillowMetricAnnualChangeVariant1Required, total=False):
+    reason: str
+
+
+class _ZillowMetricMonthlyChangeVariant1Required(TypedDict):
+    value: Optional[float]
+    unit: Literal["percent", "percentage_points", "days"]
+
+
+class ZillowMetricMonthlyChangeVariant1(_ZillowMetricMonthlyChangeVariant1Required, total=False):
+    reason: str
+
+
+class _ZillowMetricRentAccelerationVariant1Required(TypedDict):
+    value: Optional[float]
+    unit: Literal["percent", "percentage_points", "days"]
+
+
+class ZillowMetricRentAccelerationVariant1(_ZillowMetricRentAccelerationVariant1Required, total=False):
+    reason: str
+
+
+class ZillowMetricPointsItem(TypedDict):
+    period: str
+    value: Optional[float]
+
+
+class ZillowMetric(TypedDict):
+    """Regional provider metric with its actual geography, variant, period, accepted snapshot and
+    source attribution. Never a parcel value, achieved rent or automatic scenario input.
+    """
+    rights: Optional[ZillowMetricRightsVariant1]
+    metric: Literal["zori", "zhvi", "inventory", "price_cut_share", "median_days_to_pending"]
+    status: Literal["available", "unavailable"]
+    reason: Optional[str]
+    definition: str
+    unit: Literal["usd", "usd_per_month", "count", "fraction", "days"]
+    value: Optional[float]
+    period: Optional[str]
+    variant: Optional[ZillowMetricVariantVariant1]
+    geography: Optional[ZillowMetricGeographyVariant1]
+    mapping: Optional[ZillowMetricMappingVariant1]
+    snapshot: Optional[ZillowMetricSnapshotVariant1]
+    annualChange: Optional[ZillowMetricAnnualChangeVariant1]
+    monthlyChange: Optional[ZillowMetricMonthlyChangeVariant1]
+    rentAcceleration: Optional[ZillowMetricRentAccelerationVariant1]
+    points: List[ZillowMetricPointsItem]
+    sourceUrl: str
+    attribution: str
+
+
+class ZillowContextRequestedGeography(TypedDict):
+    zip5: Optional[str]
+    countyFips: Optional[str]
+    state: Optional[str]
+    cbsa: Optional[str]
+
+
+class ZillowContextMetricsItemRightsVariant1(TypedDict):
+    version: str
+    evidenceUrl: Optional[str]
+    expiresAt: Optional[str]
+
+
+class ZillowContextMetricsItemVariantVariant1(TypedDict):
+    datasetKey: str
+    registryVersion: int
+    universe: str
+    frequency: Literal["monthly"]
+    smoothing: Literal["smoothed"]
+    seasonalAdjustment: Literal["sa", "not_stated"]
+
+
+class ZillowContextMetricsItemGeographyVariant1(TypedDict):
+    providerId: str
+    name: str
+    type: Literal["country", "msa", "county", "zip"]
+
+
+class ZillowContextMetricsItemMappingVariant1(TypedDict):
+    method: Literal["postal_zip", "county_fips", "verified_crosswalk", "explicit_provider_region"]
+    version: str
+    source: str
+    fallbackReason: Optional[str]
+
+
+class ZillowContextMetricsItemSnapshotVariant1(TypedDict):
+    id: str
+    sha256: str
+    retrievedAt: str
+    acceptedAt: str
+    latestPeriod: str
+    stale: bool
+
+
+class _ZillowContextMetricsItemAnnualChangeVariant1Required(TypedDict):
+    value: Optional[float]
+    unit: Literal["percent", "percentage_points", "days"]
+
+
+class ZillowContextMetricsItemAnnualChangeVariant1(_ZillowContextMetricsItemAnnualChangeVariant1Required, total=False):
+    reason: str
+
+
+class _ZillowContextMetricsItemMonthlyChangeVariant1Required(TypedDict):
+    value: Optional[float]
+    unit: Literal["percent", "percentage_points", "days"]
+
+
+class ZillowContextMetricsItemMonthlyChangeVariant1(_ZillowContextMetricsItemMonthlyChangeVariant1Required, total=False):
+    reason: str
+
+
+class _ZillowContextMetricsItemRentAccelerationVariant1Required(TypedDict):
+    value: Optional[float]
+    unit: Literal["percent", "percentage_points", "days"]
+
+
+class ZillowContextMetricsItemRentAccelerationVariant1(_ZillowContextMetricsItemRentAccelerationVariant1Required, total=False):
+    reason: str
+
+
+class ZillowContextMetricsItemPointsItem(TypedDict):
+    period: str
+    value: Optional[float]
+
+
+class ZillowContextMetricsItem(TypedDict):
+    rights: Optional[ZillowContextMetricsItemRightsVariant1]
+    metric: Literal["zori", "zhvi", "inventory", "price_cut_share", "median_days_to_pending"]
+    status: Literal["available", "unavailable"]
+    reason: Optional[str]
+    definition: str
+    unit: Literal["usd", "usd_per_month", "count", "fraction", "days"]
+    value: Optional[float]
+    period: Optional[str]
+    variant: Optional[ZillowContextMetricsItemVariantVariant1]
+    geography: Optional[ZillowContextMetricsItemGeographyVariant1]
+    mapping: Optional[ZillowContextMetricsItemMappingVariant1]
+    snapshot: Optional[ZillowContextMetricsItemSnapshotVariant1]
+    annualChange: Optional[ZillowContextMetricsItemAnnualChangeVariant1]
+    monthlyChange: Optional[ZillowContextMetricsItemMonthlyChangeVariant1]
+    rentAcceleration: Optional[ZillowContextMetricsItemRentAccelerationVariant1]
+    points: List[ZillowContextMetricsItemPointsItem]
+    sourceUrl: str
+    attribution: str
+
+
+class ZillowContextRights(TypedDict):
+    status: Literal["approved", "unknown", "denied"]
+    use: Literal["display", "agent", "export"]
+    evidenceUrl: Optional[str]
+
+
+class _ZillowContextRequired(TypedDict):
+    schemaVersion: Literal["zillow-market-v1"]
+    status: Literal["available", "partial", "unavailable"]
+    requestedGeography: ZillowContextRequestedGeography
+    metrics: List[ZillowContextMetricsItem]
+    reason: Optional[str]
+    rights: ZillowContextRights
+
+
+class ZillowContext(_ZillowContextRequired, total=False):
+    """Each metric carries its own actual geography and missing reason. canonical_id is omitted when
+    source rights prevent parcel resolution.
+    """
+    canonical_id: str
+
+
+class ZillowComparisonMetricsItemRightsVariant1(TypedDict):
+    version: str
+    evidenceUrl: Optional[str]
+    expiresAt: Optional[str]
+
+
+class ZillowComparisonMetricsItemVariantVariant1(TypedDict):
+    datasetKey: str
+    registryVersion: int
+    universe: str
+    frequency: Literal["monthly"]
+    smoothing: Literal["smoothed"]
+    seasonalAdjustment: Literal["sa", "not_stated"]
+
+
+class ZillowComparisonMetricsItemGeographyVariant1(TypedDict):
+    providerId: str
+    name: str
+    type: Literal["country", "msa", "county", "zip"]
+
+
+class ZillowComparisonMetricsItemMappingVariant1(TypedDict):
+    method: Literal["postal_zip", "county_fips", "verified_crosswalk", "explicit_provider_region"]
+    version: str
+    source: str
+    fallbackReason: Optional[str]
+
+
+class ZillowComparisonMetricsItemSnapshotVariant1(TypedDict):
+    id: str
+    sha256: str
+    retrievedAt: str
+    acceptedAt: str
+    latestPeriod: str
+    stale: bool
+
+
+class _ZillowComparisonMetricsItemAnnualChangeVariant1Required(TypedDict):
+    value: Optional[float]
+    unit: Literal["percent", "percentage_points", "days"]
+
+
+class ZillowComparisonMetricsItemAnnualChangeVariant1(_ZillowComparisonMetricsItemAnnualChangeVariant1Required, total=False):
+    reason: str
+
+
+class _ZillowComparisonMetricsItemMonthlyChangeVariant1Required(TypedDict):
+    value: Optional[float]
+    unit: Literal["percent", "percentage_points", "days"]
+
+
+class ZillowComparisonMetricsItemMonthlyChangeVariant1(_ZillowComparisonMetricsItemMonthlyChangeVariant1Required, total=False):
+    reason: str
+
+
+class _ZillowComparisonMetricsItemRentAccelerationVariant1Required(TypedDict):
+    value: Optional[float]
+    unit: Literal["percent", "percentage_points", "days"]
+
+
+class ZillowComparisonMetricsItemRentAccelerationVariant1(_ZillowComparisonMetricsItemRentAccelerationVariant1Required, total=False):
+    reason: str
+
+
+class ZillowComparisonMetricsItemPointsItem(TypedDict):
+    period: str
+    value: Optional[float]
+
+
+class ZillowComparisonMetricsItem(TypedDict):
+    rights: Optional[ZillowComparisonMetricsItemRightsVariant1]
+    metric: Literal["zori", "zhvi", "inventory", "price_cut_share", "median_days_to_pending"]
+    status: Literal["available", "unavailable"]
+    reason: Optional[str]
+    definition: str
+    unit: Literal["usd", "usd_per_month", "count", "fraction", "days"]
+    value: Optional[float]
+    period: Optional[str]
+    variant: Optional[ZillowComparisonMetricsItemVariantVariant1]
+    geography: Optional[ZillowComparisonMetricsItemGeographyVariant1]
+    mapping: Optional[ZillowComparisonMetricsItemMappingVariant1]
+    snapshot: Optional[ZillowComparisonMetricsItemSnapshotVariant1]
+    annualChange: Optional[ZillowComparisonMetricsItemAnnualChangeVariant1]
+    monthlyChange: Optional[ZillowComparisonMetricsItemMonthlyChangeVariant1]
+    rentAcceleration: Optional[ZillowComparisonMetricsItemRentAccelerationVariant1]
+    points: List[ZillowComparisonMetricsItemPointsItem]
+    sourceUrl: str
+    attribution: str
+
+
+class ZillowComparisonGapsItem(TypedDict):
+    regionId: str
+    value: Optional[float]
+    reason: Optional[str]
+    unit: Literal["days", "percentage_points"]
+
+
+class ZillowComparison(TypedDict):
+    """Up to five explicit provider regions at a common period/accepted snapshot. Gaps have a nullable
+    value and explicit nullable reason; missing values are not zero.
+    """
+    schemaVersion: Literal["zillow-market-v1"]
+    datasetKey: str
+    period: str
+    referenceRegionId: str
+    metrics: List[ZillowComparisonMetricsItem]
+    gaps: List[ZillowComparisonGapsItem]
+
+
+class IntelligenceCalculationMetricsValueValueVariant1(TypedDict):
+    numerator: str
+    denominator: str
+
+
+class IntelligenceCalculationMetricsValue(TypedDict):
+    value: Optional[IntelligenceCalculationMetricsValueValueVariant1]
+    unit: str
+
+
+class IntelligenceCalculationContextRequestedScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceCalculationContextActualScopeVariant1(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceCalculationContextQueryVariant1(TypedDict):
+    as_of: str
+    knowledge_cutoff: str
+
+
+class IntelligenceCalculationContextPeriodVariant1Variant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceCalculationContextPeriodVariant1Variant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceCalculationContextPeriodVariant1Variant1Window
+
+
+class IntelligenceCalculationContextPeriodVariant1Variant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceCalculationContextPeriodVariant1Variant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceCalculationContextPeriodVariant1Variant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceCalculationContextPeriodVariant1Variant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceCalculationContextPeriodVariant1Variant3Current
+    previous: IntelligenceCalculationContextPeriodVariant1Variant3Previous
+
+
+class IntelligenceCalculationContextPeriodVariant1Variant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceCalculationContextPeriodVariant1Variant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceCalculationContextPeriodVariant1Variant4Flow
+
+
+class IntelligenceCalculationContextMetricPeriodsValueVariant1Window(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceCalculationContextMetricPeriodsValueVariant1(TypedDict):
+    kind: Literal["window"]
+    window: IntelligenceCalculationContextMetricPeriodsValueVariant1Window
+
+
+class IntelligenceCalculationContextMetricPeriodsValueVariant2(TypedDict):
+    kind: Literal["snapshot"]
+    at: str
+
+
+class IntelligenceCalculationContextMetricPeriodsValueVariant3Current(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceCalculationContextMetricPeriodsValueVariant3Previous(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceCalculationContextMetricPeriodsValueVariant3(TypedDict):
+    kind: Literal["comparison"]
+    current: IntelligenceCalculationContextMetricPeriodsValueVariant3Current
+    previous: IntelligenceCalculationContextMetricPeriodsValueVariant3Previous
+
+
+class IntelligenceCalculationContextMetricPeriodsValueVariant4Flow(TypedDict):
+    start: str
+    end: str
+
+
+class IntelligenceCalculationContextMetricPeriodsValueVariant4(TypedDict):
+    kind: Literal["stock_flow"]
+    snapshot_at: str
+    flow: IntelligenceCalculationContextMetricPeriodsValueVariant4Flow
+
+
+class IntelligenceCalculationContext(TypedDict):
+    input_kind: Literal["observed", "user_assumptions", "unavailable"]
+    requested_scope: Optional[IntelligenceCalculationContextRequestedScopeVariant1]
+    actual_scope: Optional[IntelligenceCalculationContextActualScopeVariant1]
+    query: Optional[IntelligenceCalculationContextQueryVariant1]
+    period: Optional[Union[IntelligenceCalculationContextPeriodVariant1Variant1, IntelligenceCalculationContextPeriodVariant1Variant2, IntelligenceCalculationContextPeriodVariant1Variant3, IntelligenceCalculationContextPeriodVariant1Variant4]]
+    metric_periods: Dict[str, Union[IntelligenceCalculationContextMetricPeriodsValueVariant1, IntelligenceCalculationContextMetricPeriodsValueVariant2, IntelligenceCalculationContextMetricPeriodsValueVariant3, IntelligenceCalculationContextMetricPeriodsValueVariant4]]
+    latest_observation_at: Optional[str]
+    source_as_of: Optional[str]
+    source_vintage: Optional[str]
+    history_complete: Optional[bool]
+
+
+class IntelligenceCalculation(TypedDict):
+    definition: str
+    status: Literal["available", "partial", "insufficient_data", "unavailable", "stale", "error"]
+    reasons: List[str]
+    metrics: Dict[str, IntelligenceCalculationMetricsValue]
+    counts: Dict[str, float]
+    exclusions: Dict[str, float]
+    evidence_ids: List[str]
+    context: IntelligenceCalculationContext
+
+
+class IntelligenceResidualAssumptionsCostsItem(TypedDict):
+    bucket: Literal["hard", "soft", "contingency", "carry", "other_nonland"]
+    amount: str
+    currency: str
+
+
+class IntelligenceResidualAssumptions(TypedDict):
+    currency: str
+    gross_completed_sale: str
+    selling_costs: str
+    costs: List[IntelligenceResidualAssumptionsCostsItem]
+    required_profit_dollars: str
+    fixed_acquisition_costs: str
+    acquisition_cost_rate: str
+    profit_mode: Literal["fixed_dollars"]
+    carry_mode: Literal["purchase_independent"]
+    input_source: Literal["user_input"]
+
+
+class IntelligenceScenarioRevision(TypedDict):
+    id: IntelligenceRetainedId
+    run_id: IntelligenceRetainedId
+    parent_revision_id: Optional[IntelligenceRetainedId]
+    label: Literal["base", "downside", "upside"]
+    created_at: IntelligenceInstant
+    assumptions: IntelligenceResidualAssumptions
+    result: IntelligenceCalculation
+
+
+class IntelligenceRights(TypedDict):
+    version: str
+    display: bool
+    derived: bool
+    cache: bool
+    retain_history: bool
+    export: bool
+    ai: bool
+
+
+class IntelligenceScope(TypedDict):
+    geography: str
+    property_type: str
+    currency: str
+
+
+class IntelligenceSourceCapability(TypedDict):
+    id: str
+    version: str
+    source_product: str
+    source_version: str
+    scope: IntelligenceScope
+    rights: Optional[IntelligenceRights]
+    additive_components: bool
+    complete: bool
+    mature_through: Optional[str]
+    source_as_of: Optional[str]
+    stale_after: Optional[str]
+
+
+class IntelligenceAssessmentObservation(TypedDict):
+    source: str
+    record_id: str
+    version: str
+    evidence_id: str
+    effective_at: str
+    captured_at: str
+    observed_at: Optional[str]
+    land: Optional[str]
+    improvement: Optional[str]
+    basis: Literal["assessed", "appraised", "market", "taxable"]
+    vintage: str
+    source_product: str
+    source_version: str
+    component_basis_verified: bool
+
+
+class IntelligenceEvidenceSourceRecord(TypedDict):
+    assessment_year: Optional[int]
+    tax_year: Optional[int]
+    vintage_year: Optional[int]
+    reported_total: Optional[str]
+    tax_amount: Optional[str]
+    tax_paid_amount: Optional[str]
+
+
+class IntelligenceEvidence(TypedDict):
+    id: IntelligenceRetainedId
+    source_product: str
+    source_version: str
+    captured_at: IntelligenceInstant
+    observed_at: Optional[str]
+    source_as_of: Optional[str]
+    source_url: Optional[str]
+    knowledge_basis: Literal["source_observed_at", "first_retained_capture"]
+    effective_time_basis: Literal["source_event_time", "first_retained_capture_only"]
+    capability: IntelligenceSourceCapability
+    assessment: IntelligenceAssessmentObservation
+    source_record: IntelligenceEvidenceSourceRecord
+
+
+class IntelligenceRunDetail(TypedDict):
+    run: IntelligenceRun
+    evidence: List[IntelligenceEvidence]
+
+
+class ZillowPropertyComparisonItemsItemResultRightsVariant1(TypedDict):
+    version: str
+    evidenceUrl: Optional[str]
+    expiresAt: Optional[str]
+
+
+class ZillowPropertyComparisonItemsItemResultVariantVariant1(TypedDict):
+    datasetKey: str
+    registryVersion: int
+    universe: str
+    frequency: Literal["monthly"]
+    smoothing: Literal["smoothed"]
+    seasonalAdjustment: Literal["sa", "not_stated"]
+
+
+class ZillowPropertyComparisonItemsItemResultGeographyVariant1(TypedDict):
+    providerId: str
+    name: str
+    type: Literal["country", "msa", "county", "zip"]
+
+
+class ZillowPropertyComparisonItemsItemResultMappingVariant1(TypedDict):
+    method: Literal["postal_zip", "county_fips", "verified_crosswalk", "explicit_provider_region"]
+    version: str
+    source: str
+    fallbackReason: Optional[str]
+
+
+class ZillowPropertyComparisonItemsItemResultSnapshotVariant1(TypedDict):
+    id: str
+    sha256: str
+    retrievedAt: str
+    acceptedAt: str
+    latestPeriod: str
+    stale: bool
+
+
+class _ZillowPropertyComparisonItemsItemResultAnnualChangeVariant1Required(TypedDict):
+    value: Optional[float]
+    unit: Literal["percent", "percentage_points", "days"]
+
+
+class ZillowPropertyComparisonItemsItemResultAnnualChangeVariant1(_ZillowPropertyComparisonItemsItemResultAnnualChangeVariant1Required, total=False):
+    reason: Literal["missing_period", "nonpositive_denominator", "non_finite_result", "not_applicable", "mapping_unavailable", "no_coverage", "suppressed", "historical_vintage_unavailable", "rights_unavailable", "disabled", "incompatible_variant"]
+
+
+class _ZillowPropertyComparisonItemsItemResultMonthlyChangeVariant1Required(TypedDict):
+    value: Optional[float]
+    unit: Literal["percent", "percentage_points", "days"]
+
+
+class ZillowPropertyComparisonItemsItemResultMonthlyChangeVariant1(_ZillowPropertyComparisonItemsItemResultMonthlyChangeVariant1Required, total=False):
+    reason: Literal["missing_period", "nonpositive_denominator", "non_finite_result", "not_applicable", "mapping_unavailable", "no_coverage", "suppressed", "historical_vintage_unavailable", "rights_unavailable", "disabled", "incompatible_variant"]
+
+
+class _ZillowPropertyComparisonItemsItemResultRentAccelerationVariant1Required(TypedDict):
+    value: Optional[float]
+    unit: Literal["percent", "percentage_points", "days"]
+
+
+class ZillowPropertyComparisonItemsItemResultRentAccelerationVariant1(_ZillowPropertyComparisonItemsItemResultRentAccelerationVariant1Required, total=False):
+    reason: Literal["missing_period", "nonpositive_denominator", "non_finite_result", "not_applicable", "mapping_unavailable", "no_coverage", "suppressed", "historical_vintage_unavailable", "rights_unavailable", "disabled", "incompatible_variant"]
+
+
+class ZillowPropertyComparisonItemsItemResultPointsItem(TypedDict):
+    period: str
+    value: Optional[float]
+
+
+class ZillowPropertyComparisonItemsItemResult(TypedDict):
+    rights: Optional[ZillowPropertyComparisonItemsItemResultRightsVariant1]
+    metric: Literal["zori", "zhvi", "inventory", "price_cut_share", "median_days_to_pending"]
+    status: Literal["available", "unavailable"]
+    reason: Optional[Literal["missing_period", "nonpositive_denominator", "non_finite_result", "not_applicable", "mapping_unavailable", "no_coverage", "suppressed", "historical_vintage_unavailable", "rights_unavailable", "disabled", "incompatible_variant"]]
+    definition: str
+    unit: Literal["usd", "usd_per_month", "count", "fraction", "days"]
+    value: Optional[float]
+    period: Optional[str]
+    variant: Optional[ZillowPropertyComparisonItemsItemResultVariantVariant1]
+    geography: Optional[ZillowPropertyComparisonItemsItemResultGeographyVariant1]
+    mapping: Optional[ZillowPropertyComparisonItemsItemResultMappingVariant1]
+    snapshot: Optional[ZillowPropertyComparisonItemsItemResultSnapshotVariant1]
+    annualChange: Optional[ZillowPropertyComparisonItemsItemResultAnnualChangeVariant1]
+    monthlyChange: Optional[ZillowPropertyComparisonItemsItemResultMonthlyChangeVariant1]
+    rentAcceleration: Optional[ZillowPropertyComparisonItemsItemResultRentAccelerationVariant1]
+    points: List[ZillowPropertyComparisonItemsItemResultPointsItem]
+    sourceUrl: str
+    attribution: str
+
+
+class _ZillowPropertyComparisonItemsItemGapRequired(TypedDict):
+    value: Optional[float]
+    unit: Literal["percent", "percentage_points", "days"]
+
+
+class ZillowPropertyComparisonItemsItemGap(_ZillowPropertyComparisonItemsItemGapRequired, total=False):
+    reason: Literal["missing_period", "nonpositive_denominator", "non_finite_result", "not_applicable", "mapping_unavailable", "no_coverage", "suppressed", "historical_vintage_unavailable", "rights_unavailable", "disabled", "incompatible_variant"]
+
+
+class ZillowPropertyComparisonItemsItem(TypedDict):
+    level: Literal["county", "metro", "national"]
+    datasetKey: Optional[str]
+    result: ZillowPropertyComparisonItemsItemResult
+    gap: ZillowPropertyComparisonItemsItemGap
+
+
+class _ZillowPropertyComparisonRequired(TypedDict):
+    schemaVersion: Literal["zillow-property-comparison-v1"]
+    metric: Literal["zori", "zhvi", "inventory", "price_cut_share", "median_days_to_pending"]
+    period: str
+    asOf: str
+    reference: Optional[Literal["county", "metro", "national"]]
+    items: List[ZillowPropertyComparisonItemsItem]
+
+
+class ZillowPropertyComparison(_ZillowPropertyComparisonRequired, total=False):
+    canonical_id: str
 
 
 class ParcelsOwnerResponseOwner(TypedDict):
@@ -2365,7 +5136,7 @@ class ParcelsOwnerResponse(_ParcelsOwnerResponseRequired, total=False):
     portfolio_summary: ParcelsOwnerResponsePortfolioSummary
 
 
-class ParcelsPermitsResponseVariant2(TypedDict):
+class _ParcelsPermitsResponseVariant2Required(TypedDict):
     data: List[Permit]
     permit_count: int
     """The parcel's permit count (exact) or the capped window size (a floor) — see permit_count_basis."""
@@ -2374,6 +5145,17 @@ class ParcelsPermitsResponseVariant2(TypedDict):
     """True when the parcel has more permits than `data` carries."""
     row_cap: int
     """The row cap `data` is bounded by (100)."""
+
+
+class ParcelsPermitsResponseVariant2(_ParcelsPermitsResponseVariant2Required, total=False):
+    permit_contacts_status: Literal["listed", "none_published", "unavailable"]
+    """Whether the listed permits published any phone or e-mail (`listed`), none (`none_published`), or
+    the contact read failed (`unavailable`; names are still served).
+    """
+    people_fields: Dict[str, Any]
+    """Present only when people fields were withheld (a caller without people-data access): { status:
+    withheld, code, reason, note }.
+    """
 
 
 class _ParcelsDeedsResponseVariant2Required(TypedDict):
@@ -2540,6 +5322,10 @@ class _CoverageGetResponseDataItemRequired(TypedDict):
     with_owner: Optional[float]
     with_value: Optional[float]
     last_updated: Optional[str]
+    """Kept for existing clients. Equals `data_as_of` when that is known (`last_updated_basis:
+    data_as_of`); otherwise the coverage-summary refresh time (`last_updated_basis:
+    summary_refreshed_at`). Before 2026-10-09 it was always the refresh time.
+    """
     with_geometry: Optional[float]
 
 
@@ -2557,6 +5343,17 @@ class CoverageGetResponseDataItem(_CoverageGetResponseDataItemRequired, total=Fa
     geocoded_pct: float
     owner_pct: float
     value_pct: float
+    last_updated_basis: Literal["data_as_of", "summary_refreshed_at", "unknown"]
+    """Which date `last_updated` holds."""
+    data_as_of: Optional[str]
+    """Date of the data the row's counts were measured from: the parcels_dedup snapshot version the
+    coverage summary was built from (or, on the live fallback, the newest last_ingested_at counted).
+    Not a refresh time.
+    """
+    data_as_of_basis: Literal["parcels_dedup_snapshot_version", "max_last_ingested_at", "unknown"]
+    """What `data_as_of` was read from."""
+    summary_refreshed_at: Optional[str]
+    """When the coverage summary job last rebuilt the row — a job clock, not a data date."""
 
 
 class CoverageGetResponseNationalCountsParcelCountDefinitions(TypedDict):
@@ -2589,6 +5386,8 @@ class CoverageGetResponse(_CoverageGetResponseRequired, total=False):
     national_counts: CoverageGetResponseNationalCounts
     total_parcels: int
     states_covered: int
+    date_fields: Dict[str, str]
+    """What each date field on a coverage row means (state summary only)."""
 
 
 class DealsAbsenteeResponseDataItem(TypedDict):
@@ -2608,11 +5407,15 @@ class DealsAbsenteeResponseDataItem(TypedDict):
     is_out_of_state: Optional[bool]
 
 
-class DealsAbsenteeResponse(TypedDict):
+class _DealsAbsenteeResponseRequired(TypedDict):
     data: List[DealsAbsenteeResponseDataItem]
     total: int
     limit: int
     offset: int
+
+
+class DealsAbsenteeResponse(_DealsAbsenteeResponseRequired, total=False):
+    tax_delinquency_filter: TaxDelinquencyFilter
 
 
 class DealsFlipsResponseDataItem(TypedDict):
@@ -2634,11 +5437,15 @@ class DealsFlipsResponseDataItem(TypedDict):
     flip_tier: Optional[Literal["QUICK_FLIP", "SHORT_HOLD", "MEDIUM_HOLD"]]
 
 
-class DealsFlipsResponse(TypedDict):
+class _DealsFlipsResponseRequired(TypedDict):
     data: List[DealsFlipsResponseDataItem]
     total: int
     limit: int
     offset: int
+
+
+class DealsFlipsResponse(_DealsFlipsResponseRequired, total=False):
+    tax_delinquency_filter: TaxDelinquencyFilter
 
 
 class _MarketCountiesResponseDataItemRequired(TypedDict):
@@ -2657,6 +5464,8 @@ class _MarketCountiesResponseDataItemRequired(TypedDict):
 
 
 class MarketCountiesResponseDataItem(_MarketCountiesResponseDataItemRequired, total=False):
+    under_review: List[Optional[str]]
+    stale_quarter: Optional[bool]
     state_abbr: str
     median_price: float
     avg_price: float
@@ -2665,12 +5474,16 @@ class MarketCountiesResponseDataItem(_MarketCountiesResponseDataItemRequired, to
     avg_days_on_market: int
 
 
-class MarketCountiesResponseSummary(TypedDict):
+class _MarketCountiesResponseSummaryRequired(TypedDict):
     total_counties: int
-    total_sales: int
+    total_sales: Optional[int]
     overall_median_price: float
-    total_volume: int
+    total_volume: Optional[int]
     avg_yoy_pct: float
+
+
+class MarketCountiesResponseSummary(_MarketCountiesResponseSummaryRequired, total=False):
+    under_review: List[Optional[str]]
 
 
 class MarketCountiesResponse(TypedDict):
@@ -2740,7 +5553,7 @@ class OwnersPropertiesResponse(TypedDict):
     offset: int
 
 
-class OwnersPortfolioResponsePropertiesItem(TypedDict):
+class _OwnersPortfolioResponsePropertiesItemRequired(TypedDict):
     parcel_id: str
     county_fips: str
     state_fips: str
@@ -2767,13 +5580,28 @@ class OwnersPortfolioResponsePropertiesItem(TypedDict):
     owner_roles: List[Any]
 
 
-class OwnersPortfolioResponseSummaryByStateItem(TypedDict):
+class OwnersPortfolioResponsePropertiesItem(_OwnersPortfolioResponsePropertiesItemRequired, total=False):
+    fanout: Dict[str, Any]
+    """Present only on a row that heads a NY-style fan-out family (one parcel filed under several
+    county FIPS, #552). `record_basis` is `home_county` (the row's point lies in its own county box)
+    or `possible_fanout_copy` (no home row was in the result; `likely_county` names the county the
+    point falls in). `copies_suppressed`, their county FIPS and ids list every copy folded onto this
+    row. Served county_fips and values are never rewritten; a copy's sale price equal to its
+    assessed value is listed under `value_flags` with the raw value.
+    """
+
+
+class _OwnersPortfolioResponseSummaryByStateItemRequired(TypedDict):
     state: Optional[str]
     state_fips: str
     abbr: Optional[str]
     count: Optional[int]
     total_value: Optional[int]
     total_acreage: Optional[float]
+
+
+class OwnersPortfolioResponseSummaryByStateItem(_OwnersPortfolioResponseSummaryByStateItemRequired, total=False):
+    fanout_copies_suppressed: int
 
 
 class _OwnersPortfolioResponseSummaryRequired(TypedDict):
@@ -2794,6 +5622,20 @@ class OwnersPortfolioResponseSummary(_OwnersPortfolioResponseSummaryRequired, to
     avg_assessed_value: float
     counties: int
     zoning_breakdown: Dict[str, int]
+    count_basis: str
+    """Present when copies were collapsed: what `count` counts (distinct parcels per state, county,
+    parcel_id).
+    """
+    fanout_copies_suppressed: int
+    """Fan-out copies left out of count / total_value / total_acreage."""
+    count_including_fanout_copies: int
+    """The same figure over rows as read, before fan-out copies were collapsed."""
+    total_value_including_fanout_copies: int
+    """The same figure over rows as read, before fan-out copies were collapsed."""
+    total_acreage_including_fanout_copies: float
+    """The same figure over rows as read, before fan-out copies were collapsed."""
+    returned_rows_including_fanout_copies: int
+    """The same figure over rows as read, before fan-out copies were collapsed."""
 
 
 class OwnersPortfolioResponseMatchBasisCounts(TypedDict):
@@ -2820,6 +5662,12 @@ class _OwnersPortfolioResponseRequired(TypedDict):
 
 class OwnersPortfolioResponse(_OwnersPortfolioResponseRequired, total=False):
     entity_type: Literal["individual", "corporation", "llc", "trust", "government", "other"]
+    fanout_collapse: Dict[str, Any]
+    """Present only when fan-out copies were collapsed (#552): the number of copies suppressed, the
+    families and `complete`; `complete: false` with `copies_suppressed: null` when the check could
+    not run (the totals then include any copies). The witness is the county extent table
+    (county_bbox.json), never the served county_fips.
+    """
 
 
 class OwnersReportResponseOwnerMatchBasisCounts(TypedDict):
@@ -2922,7 +5770,7 @@ class DealsContractorsResponseSourceQuality(TypedDict):
     reason: str
 
 
-class DealsContractorsResponse(TypedDict):
+class _DealsContractorsResponseRequired(TypedDict):
     data: List[Contractor]
     total: int
     limit: int
@@ -2930,11 +5778,20 @@ class DealsContractorsResponse(TypedDict):
     source_quality: DealsContractorsResponseSourceQuality
 
 
-class DealsEntitiesResponseVariant1(TypedDict):
+class DealsContractorsResponse(_DealsContractorsResponseRequired, total=False):
+    field_notes: Dict[str, str]
+    """What each re-derived contractor field means (#558)."""
+
+
+class _DealsEntitiesResponseVariant1Required(TypedDict):
     data: List[EntityOwnedParcel]
     total: int
     limit: int
     offset: int
+
+
+class DealsEntitiesResponseVariant1(_DealsEntitiesResponseVariant1Required, total=False):
+    tax_delinquency_filter: TaxDelinquencyFilter
 
 
 class DealsEntitiesResponseVariant2(TypedDict, total=False):
@@ -2945,11 +5802,15 @@ class DealsEntitiesResponseVariant2(TypedDict, total=False):
     offset: int
 
 
-class DealsHighLandRatioResponse(TypedDict):
+class _DealsHighLandRatioResponseRequired(TypedDict):
     data: List[HighLandRatioParcel]
     total: int
     limit: int
     offset: int
+
+
+class DealsHighLandRatioResponse(_DealsHighLandRatioResponseRequired, total=False):
+    tax_delinquency_filter: TaxDelinquencyFilter
 
 
 class DealsLendersResponse(TypedDict, total=False):
@@ -2959,11 +5820,15 @@ class DealsLendersResponse(TypedDict, total=False):
     offset: int
 
 
-class DealsLongHoldResponse(TypedDict):
+class _DealsLongHoldResponseRequired(TypedDict):
     data: List[LongHoldParcel]
     total: int
     limit: int
     offset: int
+
+
+class DealsLongHoldResponse(_DealsLongHoldResponseRequired, total=False):
+    tax_delinquency_filter: TaxDelinquencyFilter
 
 
 class DealsMarketResponseVariant1DataProvenance(TypedDict):
@@ -3003,6 +5868,9 @@ class WebhooksListResponse(TypedDict):
     webhooks: List[Webhook]
     quota: WebhookQuota
     tier: Literal["free", "starter", "pro", "scale", "api_100k"]
+    """The API tier key that sets this account's webhook quota, not the plan name on /pricing: `pro` =
+    Developer, `scale` = Team, `free` = Free; `starter` and `api_100k` are legacy API plans.
+    """
 
 
 class WebhooksDeleteResponse(TypedDict, total=False):
@@ -3121,7 +5989,7 @@ class MarketFlipsResponse(TypedDict):
     offset: int
 
 
-class OwnersTransactionsResponse(TypedDict, total=False):
+class OwnersTransactionsResponse(TypedDict):
     data: List[OwnerTransaction]
     count: int
 
@@ -3952,9 +6820,15 @@ class LookupGetResponse(TypedDict):
     parcel: LookupGetResponseParcel
 
 
-class LookupBatchResponseItemsItemParcelLastSale(TypedDict):
+class _LookupBatchResponseItemsItemParcelLastSaleRequired(TypedDict):
     date: Optional[str]
     price: Optional[float]
+
+
+class LookupBatchResponseItemsItemParcelLastSale(_LookupBatchResponseItemsItemParcelLastSaleRequired, total=False):
+    price_raw: float
+    """The stored price when it is a sentinel ($0 / $1 / $100) served as null (#557)."""
+    price_flag: Literal["sentinel_value"]
 
 
 class LookupBatchResponseItemsItemParcel(TypedDict):
@@ -3979,10 +6853,18 @@ class LookupBatchResponseItemsItemParcel(TypedDict):
     has_geometry: Optional[bool]
 
 
-class LookupBatchResponseItemsItem(TypedDict):
+class _LookupBatchResponseItemsItemRequired(TypedDict):
     query: Optional[str]
     match_type: Optional[str]
     parcel: Optional[LookupBatchResponseItemsItemParcel]
+
+
+class LookupBatchResponseItemsItem(_LookupBatchResponseItemsItemRequired, total=False):
+    identity_gate: Dict[str, Any]
+    """The same identity_gate block parcel_lookup carries (join_key_basis, twins_in_other_counties,
+    record_basis possible_fanout_copy with likely_county, withheld columns, value_flags).
+    `unchecked` when the probe did not run within the batch's time budget.
+    """
 
 
 class LookupBatchResponse(TypedDict):
@@ -3999,7 +6881,15 @@ class ParcelsBatchParamsTuplesItem(TypedDict):
     parcel_id: str
 
 
-class ParcelsBatchResponseRowsItem(TypedDict):
+class ParcelsBatchResponseRowsItemValueLabels(TypedDict):
+    """The display label for each value field: `market_value` → "County market value", `avm_value` →
+    "PropRaven estimate".
+    """
+    market_value: Literal["County market value"]
+    avm_value: Literal["PropRaven estimate"]
+
+
+class _ParcelsBatchResponseRowsItemRequired(TypedDict):
     id: str
     county_fips: str
     state_fips: str
@@ -4008,6 +6898,7 @@ class ParcelsBatchResponseRowsItem(TypedDict):
     normalized_address: Optional[str]
     city: Optional[str]
     state: Optional[str]
+    """USPS 2-letter state code of `state_fips` (e.g. "NC")."""
     zip: Optional[str]
     zip5: Optional[str]
     zip_plus4: Optional[str]
@@ -4021,7 +6912,16 @@ class ParcelsBatchResponseRowsItem(TypedDict):
     last_sale_price: Optional[float]
     last_sale_date: Optional[str]
     market_value: Optional[float]
+    """County market value: the market (just / full cash / appraised) value on the county assessor's
+    record, or null when the record carries none. Never PropRaven's model output: a stored value
+    that is the same figure as `avm_value` (and not the county's own assessed value) is withheld
+    here and `market_value_basis` says so. PropRaven's model is `avm_value` ("PropRaven estimate").
+    """
     avm_value: Optional[float]
+    """PropRaven estimate: PropRaven's own automated valuation (a model output — see `avm_method`,
+    `avm_method_family`, `avm_method_basis`). Not the county's value and not a licensed appraisal.
+    Display it as "PropRaven estimate", never as "market value".
+    """
     avm_confidence: Optional[str]
     avm_method: Optional[str]
     tax_amount: Optional[float]
@@ -4067,19 +6967,48 @@ class ParcelsBatchResponseRowsItem(TypedDict):
     property_type: Optional[str]
 
 
+class ParcelsBatchResponseRowsItem(_ParcelsBatchResponseRowsItemRequired, total=False):
+    market_value_basis: Literal["county_record", "propraven_estimate", "unavailable"]
+    """What `market_value` is: `county_record` (the record's market-value column as the county source
+    published it), `propraven_estimate` (the stored value was PropRaven's own estimate, so
+    `market_value` is null; the estimate is in `avm_value`), or `unavailable`.
+    """
+    market_value_note: str
+    """Present when `market_value` was withheld because it was PropRaven's estimate, not the county's
+    value.
+    """
+    value_labels: ParcelsBatchResponseRowsItemValueLabels
+    """The display label for each value field: `market_value` → "County market value", `avm_value` →
+    "PropRaven estimate".
+    """
+
+
 class ParcelsBatchResponse(TypedDict):
     rows: List[ParcelsBatchResponseRowsItem]
     missing: List[Any]
 
 
-class ParcelsCompsResponseSubject(TypedDict):
+class _ParcelsCompsResponseSubjectRequired(TypedDict):
     canonical_id: str
     parcel_id: str
     state_fips: str
     county_fips: str
 
 
-class ParcelsCompsResponseCompsItem(TypedDict):
+class ParcelsCompsResponseSubject(_ParcelsCompsResponseSubjectRequired, total=False):
+    building_sqft: Optional[float]
+    """The subject's building_sqft the size check used (#558)."""
+    year_built: Optional[int]
+
+
+class ParcelsCompsResponseCompsItemSimilarityComponents(TypedDict, total=False):
+    """Each similarity component, 0–1."""
+    size: Optional[float]
+    year_built: Optional[float]
+    distance: Optional[float]
+
+
+class _ParcelsCompsResponseCompsItemRequired(TypedDict):
     comp_parcel_id: Optional[str]
     comp_apn: Optional[str]
     comp_sale_price: Optional[float]
@@ -4090,9 +7019,23 @@ class ParcelsCompsResponseCompsItem(TypedDict):
     comp_beds: Optional[float]
     comp_baths: Optional[float]
     similarity_score: Optional[float]
+    """0–100, computed at read time (see similarity_method); null only when no component can be
+    computed.
+    """
     distance_miles: Optional[float]
     rank: Optional[int]
     sale_price_reconciled: Optional[bool]
+
+
+class ParcelsCompsResponseCompsItem(_ParcelsCompsResponseCompsItemRequired, total=False):
+    similarity_components: ParcelsCompsResponseCompsItemSimilarityComponents
+    """Each similarity component, 0–1."""
+    size_ratio: Optional[float]
+    """comp_sqft / subject building_sqft."""
+    size_within_bound: Optional[bool]
+    """size_ratio within 1/3–3."""
+    comp_address_raw: str
+    """The stored address when upper-casing changed it."""
 
 
 class ParcelsCompsResponseProvenanceGateScope(TypedDict):
@@ -4109,13 +7052,36 @@ class ParcelsCompsResponseProvenanceGate(TypedDict):
     note: Optional[str]
 
 
-class ParcelsCompsResponse(TypedDict):
+class ParcelsCompsResponseCompSetQuality(TypedDict):
+    """#558: `size_mismatch` when more than half of the comps with a size are over 3× larger or smaller
+    than the subject. A label: the comps are still listed.
+    """
+    status: Literal["ok", "size_mismatch", "unchecked"]
+    size_ratio_bound: float
+    subject_building_sqft: Optional[float]
+    comps_with_sqft: int
+    comps_outside_size_bound: int
+    reason: Optional[str]
+    owner_lane: str
+    mode: str
+
+
+class _ParcelsCompsResponseRequired(TypedDict):
     subject: ParcelsCompsResponseSubject
     tier: str
     radius_miles: Optional[float]
     count: int
     comps: List[ParcelsCompsResponseCompsItem]
     provenance_gate: ParcelsCompsResponseProvenanceGate
+
+
+class ParcelsCompsResponse(_ParcelsCompsResponseRequired, total=False):
+    comp_set_quality: ParcelsCompsResponseCompSetQuality
+    """#558: `size_mismatch` when more than half of the comps with a size are over 3× larger or smaller
+    than the subject. A label: the comps are still listed.
+    """
+    similarity_basis: str
+    similarity_method: str
 
 
 class ParcelsOccupantsResponseOccupantsItem(TypedDict):
@@ -4139,11 +7105,73 @@ class ParcelsOccupantsResponseOccupantsItem(TypedDict):
     lu_class: Optional[str]
 
 
-class ParcelsOccupantsResponse(TypedDict):
+class ParcelsOccupantsResponseLicenseesRowsItem(TypedDict, total=False):
+    license_uid: str
+    source_id: str
+    issuer_name: str
+    profession: Literal["real_estate", "insurance", "cpa", "cam"]
+    license_class: str
+    license_number: str
+    status: Literal["active", "inactive", "delinquent", "void", "expired", "other"]
+    status_raw: str
+    party_type: Literal["firm", "branch", "person"]
+    person_shaped: bool
+    display_name: Optional[str]
+    dba: Optional[str]
+    firm_name: Optional[str]
+    firm_license_uid: Optional[str]
+    addr_type: Literal["business", "mailing", "address_of_record"]
+    address_line: Optional[str]
+    unit: Optional[str]
+    city: Optional[str]
+    state: Optional[str]
+    zip5: Optional[str]
+    email: Optional[str]
+    phone: Optional[str]
+    match_method: str
+    match_confidence: float
+    operates_basis: str
+    parcel_lu_class: Optional[str]
+    first_seen: Optional[str]
+    last_seen: Optional[str]
+    as_of: Optional[str]
+
+
+class _ParcelsOccupantsResponseLicenseesRequired(TypedDict):
+    status: Literal["served", "unavailable"]
+    count: int
+    truncated: bool
+    as_of: Optional[str]
+    rows: List[ParcelsOccupantsResponseLicenseesRowsItem]
+    note: str
+
+
+class ParcelsOccupantsResponseLicensees(_ParcelsOccupantsResponseLicenseesRequired, total=False):
+    """Licensed businesses the issuing state boards place at this parcel (FL, CA, NY, CT, VA). Present
+    for an account only; a person-shaped row (a licensed individual or a sole proprietorship) is
+    people data and each response serving one is logged. `status: unavailable` means the layer could
+    not be read, never 'none here'.
+    """
+    people_fields: Dict[str, Any]
+    """Present when person-shaped licensee fields were withheld from this caller (null values, keys
+    kept).
+    """
+
+
+class _ParcelsOccupantsResponseRequired(TypedDict):
     parcel_id: str
     occupant_count: int
     occupants: List[ParcelsOccupantsResponseOccupantsItem]
     truncated: bool
+
+
+class ParcelsOccupantsResponse(_ParcelsOccupantsResponseRequired, total=False):
+    licensees: ParcelsOccupantsResponseLicensees
+    """Licensed businesses the issuing state boards place at this parcel (FL, CA, NY, CT, VA). Present
+    for an account only; a person-shaped row (a licensed individual or a sole proprietorship) is
+    people data and each response serving one is logged. `status: unavailable` means the layer could
+    not be read, never 'none here'.
+    """
 
 
 class ParcelsViolationsResponsePlace(TypedDict):
@@ -4199,7 +7227,7 @@ class ParcelsPoisResponse(TypedDict):
 
 class MarketSnapshotResponseGeo(TypedDict):
     scope: Optional[str]
-    value: Optional[float]
+    value: Optional[str]
     state_fips: str
     county_fips: str
     county_name: Optional[str]
@@ -4563,17 +7591,28 @@ class CmbsExposureResponse(TypedDict):
 
 class FreshnessGetResponse(TypedDict):
     content_as_of: str
+    """Content date of the served data (ISO-8601 UTC): how current the records in the served snapshot
+    are, measured as `content_date_basis` says. Not the swap time.
+    """
     last_enriched_at: str
+    """Same value as `content_as_of` (kept for older clients)."""
     content_date_basis: str
+    """How `content_as_of` is measured, e.g. `source_collection_vintage_median`."""
     content_date_note: str
+    """Plain-language definition of `content_as_of` for the current basis, with its limits."""
     content_median_date: str
     content_max_date: str
     content_oldest_date: str
     content_source_count: int
     content_active_source_count: int
     swapped_at: str
+    """When the serving slot was last swapped (the current snapshot went live). A swap does not make
+    the content newer; compare with `content_as_of`.
+    """
     updated_at: str
+    """Same value as `swapped_at` (kept for older clients)."""
     snapshot_built_at: str
+    """When the served snapshot was built."""
     parcel_count: int
 
 
@@ -4586,13 +7625,32 @@ class FreshnessDatasetsResponseDatasetsItemRefresh(TypedDict):
     warning_reason: Optional[str]
 
 
-class FreshnessDatasetsResponseDatasetsItemRecordActivity(TypedDict):
+class FreshnessDatasetsResponseDatasetsItemRecordActivityFutureDateGuard(TypedDict):
+    """Present only when the freshness probe's observed max record date lies in the future (beyond the
+    skew limit) — e.g. a two-digit-year parse artifact. The raw value is kept here; `latest_at` then
+    carries the newest non-future record date when it could be read at serve time (else null).
+    """
+    rejected_observed_max: str
+    skew_limit_hours: float
+    latest_at_basis: Literal["max_non_future_record_date", "unavailable"]
+    future_dated_rows: Optional[int]
+
+
+class _FreshnessDatasetsResponseDatasetsItemRecordActivityRequired(TypedDict):
     latest_at: Optional[str]
     evaluated_at: Optional[str]
     basis: Optional[str]
     age_hours: Optional[float]
     max_age_hours: Optional[float]
     status: Optional[str]
+
+
+class FreshnessDatasetsResponseDatasetsItemRecordActivity(_FreshnessDatasetsResponseDatasetsItemRecordActivityRequired, total=False):
+    future_date_guard: FreshnessDatasetsResponseDatasetsItemRecordActivityFutureDateGuard
+    """Present only when the freshness probe's observed max record date lies in the future (beyond the
+    skew limit) — e.g. a two-digit-year parse artifact. The raw value is kept here; `latest_at` then
+    carries the newest non-future record date when it could be read at serve time (else null).
+    """
 
 
 class FreshnessDatasetsResponseDatasetsItemCoverage(TypedDict):
@@ -4695,13 +7753,72 @@ class CohortsListResponse(TypedDict):
     cohorts: List[CohortsListResponseCohortsItem]
 
 
+class LicenseesFirmsResponseFirmsItemLocationsItem(TypedDict, total=False):
+    license_uid: str
+    source_id: str
+    issuer_name: str
+    license_class: str
+    license_number: str
+    status: Literal["active", "inactive", "delinquent", "void", "expired", "other"]
+    status_raw: str
+    party_type: Literal["firm", "branch", "person"]
+    person_shaped: bool
+    dba: Optional[str]
+    addr_type: Literal["business", "mailing", "address_of_record"]
+    address_line: Optional[str]
+    unit: Optional[str]
+    city: Optional[str]
+    state: Optional[str]
+    zip5: Optional[str]
+    email: Optional[str]
+    phone: Optional[str]
+    match_confidence: Optional[float]
+    as_of: Optional[str]
+    name: Optional[str]
+    parcel_id: Optional[str]
+    """Canonical parcel id the address matched, when it matched."""
+    operates_here: bool
+
+
+class LicenseesFirmsResponseFirmsItem(TypedDict, total=False):
+    firm_key: str
+    name: Optional[str]
+    profession: str
+    location_count: int
+    license_count: int
+    issuers: List[str]
+    locations: List[LicenseesFirmsResponseFirmsItemLocationsItem]
+    locations_truncated: bool
+
+
+class _LicenseesFirmsResponseRequired(TypedDict):
+    query: Dict[str, Any]
+    firm_count: int
+    firm_total: int
+    truncated: bool
+    firms: List[LicenseesFirmsResponseFirmsItem]
+    note: str
+
+
+class LicenseesFirmsResponse(_LicenseesFirmsResponseRequired, total=False):
+    people_fields: Dict[str, Any]
+    """Present when person-shaped licensee fields were withheld from this caller (null values, keys
+    kept).
+    """
+
+
 Error = Problem
 WebhookFilter = Union[WebhookFilterVariant1, WebhookFilterVariant2, WebhookFilterVariant3]
+IntelligenceParcelId = str
+IntelligenceInstant = str
+IntelligenceRetainedId = str
+ZillowComparisonResponse = Union[ZillowComparison, ZillowPropertyComparison]
 ParcelsAssessmentHistoryResponse = AssessmentHistory
 ParcelsGetResponse = Parcel
 ParcelsPermitsResponse = Union[List[Permit], ParcelsPermitsResponseVariant2]
 ParcelsDeedsResponse = Union[List[Deed], ParcelsDeedsResponseVariant2]
 ParcelsRisksResponse = RiskAssessment
+ParcelsTaxStatusResponse = ParcelTaxStatus
 OwnersGetResponse = Owner
 DealsEntitiesResponse = Union[DealsEntitiesResponseVariant1, DealsEntitiesResponseVariant2]
 DealsMarketResponse = Union[DealsMarketResponseVariant1, DealsMarketResponseVariant2]
@@ -4723,3 +7840,10 @@ WatchCreateResponse = Dict[str, Any]
 WatchDeleteResponse = Dict[str, Any]
 OwnersCardResponse = OwnerCard
 CohortsExportResponse = Union[str, Dict[str, Any]]
+IntelligenceSignalsResponse = IntelligenceRun
+IntelligenceRunResponse = IntelligenceRunDetail
+IntelligenceCreateScenarioResponse = IntelligenceScenarioRevision
+IntelligenceHandoffResponse = IntelligenceHandoff
+MarketZillowContextResponse = ZillowContext
+MarketZillowTimeseriesResponse = ZillowMetric
+MarketCompareZillowMarketsResponse = ZillowComparisonResponse

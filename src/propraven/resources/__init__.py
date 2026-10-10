@@ -24,6 +24,8 @@ from .cmbs import AsyncCmbsResource, CmbsResource
 from .freshness import AsyncFreshnessResource, FreshnessResource
 from .crime import AsyncCrimeResource, CrimeResource
 from .traffic import AsyncTrafficResource, TrafficResource
+from .licensees import AsyncLicenseesResource, LicenseesResource
+from .intelligence import AsyncIntelligenceResource, IntelligenceResource
 
 __all__ = [
     "AccountResource",
@@ -35,7 +37,9 @@ __all__ = [
     "AsyncCrimeResource",
     "AsyncDealsResource",
     "AsyncFreshnessResource",
+    "AsyncIntelligenceResource",
     "AsyncLeadsResource",
+    "AsyncLicenseesResource",
     "AsyncLookupResource",
     "AsyncMarketResource",
     "AsyncOwnersResource",
@@ -54,7 +58,9 @@ __all__ = [
     "CrimeResource",
     "DealsResource",
     "FreshnessResource",
+    "IntelligenceResource",
     "LeadsResource",
+    "LicenseesResource",
     "LookupResource",
     "MarketResource",
     "OwnersResource",
@@ -74,7 +80,7 @@ class SyncResourcesMixin:
 
     @cached_property
     def parcels(self) -> ParcelsResource:
-        """``parcels`` namespace (16 operations)."""
+        """``parcels`` namespace (17 operations)."""
         return ParcelsResource(self)
 
     @cached_property
@@ -94,7 +100,7 @@ class SyncResourcesMixin:
 
     @cached_property
     def market(self) -> MarketResource:
-        """``market`` namespace (5 operations)."""
+        """``market`` namespace (8 operations)."""
         return MarketResource(self)
 
     @cached_property
@@ -167,13 +173,23 @@ class SyncResourcesMixin:
         """``traffic`` namespace (1 operation)."""
         return TrafficResource(self)
 
+    @cached_property
+    def licensees(self) -> LicenseesResource:
+        """``licensees`` namespace (1 operation)."""
+        return LicenseesResource(self)
+
+    @cached_property
+    def intelligence(self) -> IntelligenceResource:
+        """``intelligence`` namespace (4 operations)."""
+        return IntelligenceResource(self)
+
 
 class AsyncResourcesMixin:
     """Adds one attribute per API namespace to the client."""
 
     @cached_property
     def parcels(self) -> AsyncParcelsResource:
-        """``parcels`` namespace (16 operations)."""
+        """``parcels`` namespace (17 operations)."""
         return AsyncParcelsResource(self)
 
     @cached_property
@@ -193,7 +209,7 @@ class AsyncResourcesMixin:
 
     @cached_property
     def market(self) -> AsyncMarketResource:
-        """``market`` namespace (5 operations)."""
+        """``market`` namespace (8 operations)."""
         return AsyncMarketResource(self)
 
     @cached_property
@@ -265,3 +281,13 @@ class AsyncResourcesMixin:
     def traffic(self) -> AsyncTrafficResource:
         """``traffic`` namespace (1 operation)."""
         return AsyncTrafficResource(self)
+
+    @cached_property
+    def licensees(self) -> AsyncLicenseesResource:
+        """``licensees`` namespace (1 operation)."""
+        return AsyncLicenseesResource(self)
+
+    @cached_property
+    def intelligence(self) -> AsyncIntelligenceResource:
+        """``intelligence`` namespace (4 operations)."""
+        return AsyncIntelligenceResource(self)

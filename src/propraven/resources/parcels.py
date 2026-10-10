@@ -122,7 +122,12 @@ class ParcelsResource(SyncAPIResource):
 
         ``GET /api/v1/parcels/{id}/permits``
 
-        Retrieve building and construction permits associated with a parcel.
+        Retrieve building and construction permits associated with a parcel. ACCOUNT REQUIRED (API
+        key, MCP OAuth token or signed-in session). Each permit carries the people the jurisdiction
+        filed on it: `owner_name`, `applicant_name`, `permit_contacts` (every published phone and
+        e-mail with its role, "unknown" where the publisher states none) and
+        `people_fields_published` (the publisher's own people fields, verbatim). Each served read is
+        recorded in PropRaven's people-data access log.
 
         Args:
             id: Composite parcel identifier (county_fips:parcel_id).
@@ -208,6 +213,48 @@ class ParcelsResource(SyncAPIResource):
             max_retries=max_retries,
         ))
 
+    def tax_status(
+        self,
+        id: str,
+        *,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.ParcelsTaxStatusResponse:
+        """Property-tax delinquency status of a parcel
+
+        ``GET /api/v1/parcels/{id}/tax-status``
+
+        Whether the parcel is on a treasurer's or tax collector's published property-tax
+        delinquency, lien-sale or tax-sale list (pilot jurisdictions), with each record's status,
+        amount (and what the amount is), tax years, sale, publisher, dates and the list's scope.
+        People data (the owner on the tax bill, its mailing address, certificate holders). An
+        ACCOUNT is served like the owner card: a response that serves records counts as one lookup
+        against the account's monthly cap (included on paid plans) and is written to the people-data
+        access log; at the cap the records are withheld with `people_fields.code:
+        lookup_cap_reached` (nothing charged). A caller WITHOUT an account may pay per answer
+        ($0.10, `maxAmountRequired` 100000) with an x402 `X-PAYMENT` header or an `X-CREDIT-TOKEN`:
+        the answer (`paid_via: x402 | credits`) is returned only once the payment settles or the
+        debit succeeds; `not_covered` and `unavailable` answers are free (`charged: false`). An
+        UNPAID caller with no account gets 401 `code: account_required` and nothing else. Before the
+        layer's first load `status` is `unavailable`.
+
+        Args:
+            id: Parcel identifier: the canonical `state_fips:county_fips:parcel_id` form (e.g.
+                `37:119:12104406`), the legacy 5-digit `county_fips5:parcel_id` form, or a PropRaven
+                parcel UUID. URL-encode it.
+        """
+        return cast("_t.ParcelsTaxStatusResponse", self._client._request(
+            "GET",
+            "/api/v1/parcels/{id}/tax-status",
+            path_params={"id": id},
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
     def geojson(
         self,
         *,
@@ -280,17 +327,16 @@ class ParcelsResource(SyncAPIResource):
 
         ACCESS requires ONE of: (a) x402 pay-per-call -- send a base64 signed x402 PaymentPayload in
         the `X-PAYMENT` header; on a successful build the dossier is returned and the on-chain
-        settlement receipt is in the `X-PAYMENT-RESPONSE` response header. No account is needed for
-        the parcel record, but PEOPLE DATA (owner names, owner mailing addresses, entity principals,
-        deed and sale party names and addresses) is delivered to accounts only: a wallet-only or
-        credit-token buyer receives the dossier with those fields set to null and a top-level
-        `people_fields` marker (see PeopleFieldsWithheld), and the price is computed on exactly that
-        body, so it never counts a field the buyer does not receive. Send your API key with the
-        payment to receive them. (b) A genuine PAID PropRaven subscription entitlement -- the
-        dossier is served on the subscription invoice. Being merely authenticated is NOT sufficient:
-        a free-tier key, or a self-service first-party key with no paid plan, receives a 402. (c)
-        Anything else -> HTTP 402 whose `accepts` array carries the exact x402 payment requirements
-        for this parcel.
+        settlement receipt is in the `X-PAYMENT-RESPONSE` response header. No account is needed: the
+        dossier, PEOPLE DATA included (owner names, owner mailing addresses, entity principals, deed
+        and sale party names and addresses), is delivered to a wallet-only or credit-token buyer
+        once the x402 payment settles or the credit debit succeeds, and the price is computed on
+        exactly that body. An unpaid caller gets the 402 quote and nothing else. Send your API key
+        with the payment to receive them. (b) A genuine PAID PropRaven subscription entitlement --
+        the dossier is served on the subscription invoice. Being merely authenticated is NOT
+        sufficient: a free-tier key, or a self-service first-party key with no paid plan, receives a
+        402. (c) Anything else -> HTTP 402 whose `accepts` array carries the exact x402 payment
+        requirements for this parcel.
 
         Args:
             id: Parcel ID. Composite `county_fips:parcel_id` or county-local id when `county_fips`
@@ -573,7 +619,10 @@ class ParcelsResource(SyncAPIResource):
         ``GET /api/v1/parcels/{id}/occupants``
 
         Businesses matched to the parcel (names, brands, categories, match confidence), primary
-        occupant first. At most 100 rows; `truncated` says when more exist.
+        occupant first. At most 100 rows; `truncated` says when more exist. For an account,
+        `licensees` adds the licensed businesses the state licensing boards place at the parcel
+        (firms, or individuals at a publisher-labelled business address; match confidence >= 0.80;
+        never a residential parcel).
 
         Args:
             id: Parcel identifier: the canonical `state_fips:county_fips:parcel_id` form (e.g.
@@ -761,7 +810,12 @@ class AsyncParcelsResource(AsyncAPIResource):
 
         ``GET /api/v1/parcels/{id}/permits``
 
-        Retrieve building and construction permits associated with a parcel.
+        Retrieve building and construction permits associated with a parcel. ACCOUNT REQUIRED (API
+        key, MCP OAuth token or signed-in session). Each permit carries the people the jurisdiction
+        filed on it: `owner_name`, `applicant_name`, `permit_contacts` (every published phone and
+        e-mail with its role, "unknown" where the publisher states none) and
+        `people_fields_published` (the publisher's own people fields, verbatim). Each served read is
+        recorded in PropRaven's people-data access log.
 
         Args:
             id: Composite parcel identifier (county_fips:parcel_id).
@@ -847,6 +901,48 @@ class AsyncParcelsResource(AsyncAPIResource):
             max_retries=max_retries,
         ))
 
+    async def tax_status(
+        self,
+        id: str,
+        *,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.ParcelsTaxStatusResponse:
+        """Property-tax delinquency status of a parcel
+
+        ``GET /api/v1/parcels/{id}/tax-status``
+
+        Whether the parcel is on a treasurer's or tax collector's published property-tax
+        delinquency, lien-sale or tax-sale list (pilot jurisdictions), with each record's status,
+        amount (and what the amount is), tax years, sale, publisher, dates and the list's scope.
+        People data (the owner on the tax bill, its mailing address, certificate holders). An
+        ACCOUNT is served like the owner card: a response that serves records counts as one lookup
+        against the account's monthly cap (included on paid plans) and is written to the people-data
+        access log; at the cap the records are withheld with `people_fields.code:
+        lookup_cap_reached` (nothing charged). A caller WITHOUT an account may pay per answer
+        ($0.10, `maxAmountRequired` 100000) with an x402 `X-PAYMENT` header or an `X-CREDIT-TOKEN`:
+        the answer (`paid_via: x402 | credits`) is returned only once the payment settles or the
+        debit succeeds; `not_covered` and `unavailable` answers are free (`charged: false`). An
+        UNPAID caller with no account gets 401 `code: account_required` and nothing else. Before the
+        layer's first load `status` is `unavailable`.
+
+        Args:
+            id: Parcel identifier: the canonical `state_fips:county_fips:parcel_id` form (e.g.
+                `37:119:12104406`), the legacy 5-digit `county_fips5:parcel_id` form, or a PropRaven
+                parcel UUID. URL-encode it.
+        """
+        return cast("_t.ParcelsTaxStatusResponse", await self._client._request(
+            "GET",
+            "/api/v1/parcels/{id}/tax-status",
+            path_params={"id": id},
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
     async def geojson(
         self,
         *,
@@ -919,17 +1015,16 @@ class AsyncParcelsResource(AsyncAPIResource):
 
         ACCESS requires ONE of: (a) x402 pay-per-call -- send a base64 signed x402 PaymentPayload in
         the `X-PAYMENT` header; on a successful build the dossier is returned and the on-chain
-        settlement receipt is in the `X-PAYMENT-RESPONSE` response header. No account is needed for
-        the parcel record, but PEOPLE DATA (owner names, owner mailing addresses, entity principals,
-        deed and sale party names and addresses) is delivered to accounts only: a wallet-only or
-        credit-token buyer receives the dossier with those fields set to null and a top-level
-        `people_fields` marker (see PeopleFieldsWithheld), and the price is computed on exactly that
-        body, so it never counts a field the buyer does not receive. Send your API key with the
-        payment to receive them. (b) A genuine PAID PropRaven subscription entitlement -- the
-        dossier is served on the subscription invoice. Being merely authenticated is NOT sufficient:
-        a free-tier key, or a self-service first-party key with no paid plan, receives a 402. (c)
-        Anything else -> HTTP 402 whose `accepts` array carries the exact x402 payment requirements
-        for this parcel.
+        settlement receipt is in the `X-PAYMENT-RESPONSE` response header. No account is needed: the
+        dossier, PEOPLE DATA included (owner names, owner mailing addresses, entity principals, deed
+        and sale party names and addresses), is delivered to a wallet-only or credit-token buyer
+        once the x402 payment settles or the credit debit succeeds, and the price is computed on
+        exactly that body. An unpaid caller gets the 402 quote and nothing else. Send your API key
+        with the payment to receive them. (b) A genuine PAID PropRaven subscription entitlement --
+        the dossier is served on the subscription invoice. Being merely authenticated is NOT
+        sufficient: a free-tier key, or a self-service first-party key with no paid plan, receives a
+        402. (c) Anything else -> HTTP 402 whose `accepts` array carries the exact x402 payment
+        requirements for this parcel.
 
         Args:
             id: Parcel ID. Composite `county_fips:parcel_id` or county-local id when `county_fips`
@@ -1212,7 +1307,10 @@ class AsyncParcelsResource(AsyncAPIResource):
         ``GET /api/v1/parcels/{id}/occupants``
 
         Businesses matched to the parcel (names, brands, categories, match confidence), primary
-        occupant first. At most 100 rows; `truncated` says when more exist.
+        occupant first. At most 100 rows; `truncated` says when more exist. For an account,
+        `licensees` adds the licensed businesses the state licensing boards place at the parcel
+        (firms, or individuals at a publisher-labelled business address; match confidence >= 0.80;
+        never a residential parcel).
 
         Args:
             id: Parcel identifier: the canonical `state_fips:county_fips:parcel_id` form (e.g.

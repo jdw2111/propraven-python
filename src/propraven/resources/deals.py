@@ -25,6 +25,7 @@ class DealsResource(SyncAPIResource):
         state_fips: Optional[str] = None,
         min_value: Optional[float] = None,
         out_of_state: Optional[bool] = None,
+        tax_delinquent: Optional[bool] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -43,6 +44,10 @@ class DealsResource(SyncAPIResource):
             state_fips: Filter by state FIPS code.
             min_value: Minimum assessed value.
             out_of_state: Only return owners whose mailing address is in a different state.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter.
         """
         return cast("_t.DealsAbsenteeResponse", self._client._request(
             "GET",
@@ -52,6 +57,7 @@ class DealsResource(SyncAPIResource):
                 "state_fips": state_fips,
                 "min_value": min_value,
                 "out_of_state": out_of_state,
+                "tax_delinquent": tax_delinquent,
                 "limit": limit,
                 "offset": offset,
             },
@@ -68,6 +74,7 @@ class DealsResource(SyncAPIResource):
         state_fips: Optional[str] = None,
         min_value: Optional[float] = None,
         out_of_state: Optional[bool] = None,
+        tax_delinquent: Optional[bool] = None,
         page_size: Optional[int] = None,
         max_items: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -91,9 +98,13 @@ class DealsResource(SyncAPIResource):
             state_fips: Filter by state FIPS code.
             min_value: Minimum assessed value.
             out_of_state: Only return owners whose mailing address is in a different state.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter.
         """
         return iterate_offset(
-            lambda _limit, _pos: self.absentee(county_fips=county_fips, state_fips=state_fips, min_value=min_value, out_of_state=out_of_state, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
+            lambda _limit, _pos: self.absentee(county_fips=county_fips, state_fips=state_fips, min_value=min_value, out_of_state=out_of_state, tax_delinquent=tax_delinquent, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
             items="data", page_size=page_size, max_items=max_items,
         )
 
@@ -105,6 +116,7 @@ class DealsResource(SyncAPIResource):
         flip_tier: Optional[Literal["QUICK_FLIP", "SHORT_HOLD", "MEDIUM_HOLD"]] = None,
         min_profit: Optional[float] = None,
         view: Optional[Literal["flippers"]] = None,
+        tax_delinquent: Optional[bool] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -129,6 +141,11 @@ class DealsResource(SyncAPIResource):
             min_profit: Minimum estimated profit.
             view: Set to 'flippers' to return a ranked list of top flippers instead of individual
                 flips.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter. Parcel view
+                only (400 with view=flippers).
         """
         return cast("_t.DealsFlipsResponse", self._client._request(
             "GET",
@@ -139,6 +156,7 @@ class DealsResource(SyncAPIResource):
                 "flip_tier": flip_tier,
                 "min_profit": min_profit,
                 "view": view,
+                "tax_delinquent": tax_delinquent,
                 "limit": limit,
                 "offset": offset,
             },
@@ -156,6 +174,7 @@ class DealsResource(SyncAPIResource):
         flip_tier: Optional[Literal["QUICK_FLIP", "SHORT_HOLD", "MEDIUM_HOLD"]] = None,
         min_profit: Optional[float] = None,
         view: Optional[Literal["flippers"]] = None,
+        tax_delinquent: Optional[bool] = None,
         page_size: Optional[int] = None,
         max_items: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -185,9 +204,14 @@ class DealsResource(SyncAPIResource):
             min_profit: Minimum estimated profit.
             view: Set to 'flippers' to return a ranked list of top flippers instead of individual
                 flips.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter. Parcel view
+                only (400 with view=flippers).
         """
         return iterate_offset(
-            lambda _limit, _pos: self.flips(county_fips=county_fips, state_fips=state_fips, flip_tier=flip_tier, min_profit=min_profit, view=view, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
+            lambda _limit, _pos: self.flips(county_fips=county_fips, state_fips=state_fips, flip_tier=flip_tier, min_profit=min_profit, view=view, tax_delinquent=tax_delinquent, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
             items="data", page_size=page_size, max_items=max_items,
         )
 
@@ -286,6 +310,7 @@ class DealsResource(SyncAPIResource):
         min_value: Optional[int] = None,
         zoning: Optional[str] = None,
         top: Optional[bool] = None,
+        tax_delinquent: Optional[bool] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -311,6 +336,11 @@ class DealsResource(SyncAPIResource):
             zoning: Zoning substring filter.
             top: If true, returns aggregated entity rankings with summary stats instead of
                 per-parcel rows.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter. Parcel list
+                only (400 with top=true and no geography or search).
             limit: Page size, max 500.
             offset: Pagination offset.
         """
@@ -325,6 +355,7 @@ class DealsResource(SyncAPIResource):
                 "min_value": min_value,
                 "zoning": zoning,
                 "top": top,
+                "tax_delinquent": tax_delinquent,
                 "limit": limit,
                 "offset": offset,
             },
@@ -344,6 +375,7 @@ class DealsResource(SyncAPIResource):
         min_value: Optional[int] = None,
         zoning: Optional[str] = None,
         top: Optional[bool] = None,
+        tax_delinquent: Optional[bool] = None,
         page_size: Optional[int] = None,
         max_items: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -374,9 +406,14 @@ class DealsResource(SyncAPIResource):
             zoning: Zoning substring filter.
             top: If true, returns aggregated entity rankings with summary stats instead of
                 per-parcel rows.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter. Parcel list
+                only (400 with top=true and no geography or search).
         """
         return iterate_offset(
-            lambda _limit, _pos: self.entities(county_fips=county_fips, state_fips=state_fips, entity_type=entity_type, search=search, min_value=min_value, zoning=zoning, top=top, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
+            lambda _limit, _pos: self.entities(county_fips=county_fips, state_fips=state_fips, entity_type=entity_type, search=search, min_value=min_value, zoning=zoning, top=top, tax_delinquent=tax_delinquent, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
             items="data", page_size=page_size, max_items=max_items,
         )
 
@@ -388,6 +425,7 @@ class DealsResource(SyncAPIResource):
         min_ratio: Optional[float] = None,
         min_value: Optional[int] = None,
         zoning: Optional[str] = None,
+        tax_delinquent: Optional[bool] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -409,6 +447,10 @@ class DealsResource(SyncAPIResource):
             min_ratio: Minimum land/improvement ratio.
             min_value: Minimum land assessed value, USD.
             zoning: Zoning substring filter.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter.
             limit: Page size, max 500.
             offset: Pagination offset.
         """
@@ -421,6 +463,7 @@ class DealsResource(SyncAPIResource):
                 "min_ratio": min_ratio,
                 "min_value": min_value,
                 "zoning": zoning,
+                "tax_delinquent": tax_delinquent,
                 "limit": limit,
                 "offset": offset,
             },
@@ -438,6 +481,7 @@ class DealsResource(SyncAPIResource):
         min_ratio: Optional[float] = None,
         min_value: Optional[int] = None,
         zoning: Optional[str] = None,
+        tax_delinquent: Optional[bool] = None,
         page_size: Optional[int] = None,
         max_items: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -464,9 +508,13 @@ class DealsResource(SyncAPIResource):
             min_ratio: Minimum land/improvement ratio.
             min_value: Minimum land assessed value, USD.
             zoning: Zoning substring filter.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter.
         """
         return iterate_offset(
-            lambda _limit, _pos: self.high_land_ratio(county_fips=county_fips, state_fips=state_fips, min_ratio=min_ratio, min_value=min_value, zoning=zoning, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
+            lambda _limit, _pos: self.high_land_ratio(county_fips=county_fips, state_fips=state_fips, min_ratio=min_ratio, min_value=min_value, zoning=zoning, tax_delinquent=tax_delinquent, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
             items="data", page_size=page_size, max_items=max_items,
         )
 
@@ -556,6 +604,7 @@ class DealsResource(SyncAPIResource):
         min_years: Optional[int] = None,
         hold_tier: Optional[Literal["10-15yr", "15-20yr", "20-30yr", "30yr+"]] = None,
         min_value: Optional[int] = None,
+        tax_delinquent: Optional[bool] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -577,6 +626,10 @@ class DealsResource(SyncAPIResource):
             min_years: Minimum years held.
             hold_tier: Filter by hold-period tier. Case-insensitive; any other value is a 400.
             min_value: Minimum assessed value, USD.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter.
             limit: Page size, max 500.
             offset: Pagination offset.
         """
@@ -589,6 +642,7 @@ class DealsResource(SyncAPIResource):
                 "min_years": min_years,
                 "hold_tier": hold_tier,
                 "min_value": min_value,
+                "tax_delinquent": tax_delinquent,
                 "limit": limit,
                 "offset": offset,
             },
@@ -606,6 +660,7 @@ class DealsResource(SyncAPIResource):
         min_years: Optional[int] = None,
         hold_tier: Optional[Literal["10-15yr", "15-20yr", "20-30yr", "30yr+"]] = None,
         min_value: Optional[int] = None,
+        tax_delinquent: Optional[bool] = None,
         page_size: Optional[int] = None,
         max_items: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -632,9 +687,13 @@ class DealsResource(SyncAPIResource):
             min_years: Minimum years held.
             hold_tier: Filter by hold-period tier. Case-insensitive; any other value is a 400.
             min_value: Minimum assessed value, USD.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter.
         """
         return iterate_offset(
-            lambda _limit, _pos: self.long_hold(county_fips=county_fips, state_fips=state_fips, min_years=min_years, hold_tier=hold_tier, min_value=min_value, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
+            lambda _limit, _pos: self.long_hold(county_fips=county_fips, state_fips=state_fips, min_years=min_years, hold_tier=hold_tier, min_value=min_value, tax_delinquent=tax_delinquent, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
             items="data", page_size=page_size, max_items=max_items,
         )
 
@@ -822,6 +881,7 @@ class AsyncDealsResource(AsyncAPIResource):
         state_fips: Optional[str] = None,
         min_value: Optional[float] = None,
         out_of_state: Optional[bool] = None,
+        tax_delinquent: Optional[bool] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -840,6 +900,10 @@ class AsyncDealsResource(AsyncAPIResource):
             state_fips: Filter by state FIPS code.
             min_value: Minimum assessed value.
             out_of_state: Only return owners whose mailing address is in a different state.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter.
         """
         return cast("_t.DealsAbsenteeResponse", await self._client._request(
             "GET",
@@ -849,6 +913,7 @@ class AsyncDealsResource(AsyncAPIResource):
                 "state_fips": state_fips,
                 "min_value": min_value,
                 "out_of_state": out_of_state,
+                "tax_delinquent": tax_delinquent,
                 "limit": limit,
                 "offset": offset,
             },
@@ -865,6 +930,7 @@ class AsyncDealsResource(AsyncAPIResource):
         state_fips: Optional[str] = None,
         min_value: Optional[float] = None,
         out_of_state: Optional[bool] = None,
+        tax_delinquent: Optional[bool] = None,
         page_size: Optional[int] = None,
         max_items: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -888,9 +954,13 @@ class AsyncDealsResource(AsyncAPIResource):
             state_fips: Filter by state FIPS code.
             min_value: Minimum assessed value.
             out_of_state: Only return owners whose mailing address is in a different state.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter.
         """
         async for item in aiterate_offset(
-            lambda _limit, _pos: self.absentee(county_fips=county_fips, state_fips=state_fips, min_value=min_value, out_of_state=out_of_state, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
+            lambda _limit, _pos: self.absentee(county_fips=county_fips, state_fips=state_fips, min_value=min_value, out_of_state=out_of_state, tax_delinquent=tax_delinquent, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
             items="data", page_size=page_size, max_items=max_items,
         ):
             yield item
@@ -903,6 +973,7 @@ class AsyncDealsResource(AsyncAPIResource):
         flip_tier: Optional[Literal["QUICK_FLIP", "SHORT_HOLD", "MEDIUM_HOLD"]] = None,
         min_profit: Optional[float] = None,
         view: Optional[Literal["flippers"]] = None,
+        tax_delinquent: Optional[bool] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -927,6 +998,11 @@ class AsyncDealsResource(AsyncAPIResource):
             min_profit: Minimum estimated profit.
             view: Set to 'flippers' to return a ranked list of top flippers instead of individual
                 flips.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter. Parcel view
+                only (400 with view=flippers).
         """
         return cast("_t.DealsFlipsResponse", await self._client._request(
             "GET",
@@ -937,6 +1013,7 @@ class AsyncDealsResource(AsyncAPIResource):
                 "flip_tier": flip_tier,
                 "min_profit": min_profit,
                 "view": view,
+                "tax_delinquent": tax_delinquent,
                 "limit": limit,
                 "offset": offset,
             },
@@ -954,6 +1031,7 @@ class AsyncDealsResource(AsyncAPIResource):
         flip_tier: Optional[Literal["QUICK_FLIP", "SHORT_HOLD", "MEDIUM_HOLD"]] = None,
         min_profit: Optional[float] = None,
         view: Optional[Literal["flippers"]] = None,
+        tax_delinquent: Optional[bool] = None,
         page_size: Optional[int] = None,
         max_items: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -983,9 +1061,14 @@ class AsyncDealsResource(AsyncAPIResource):
             min_profit: Minimum estimated profit.
             view: Set to 'flippers' to return a ranked list of top flippers instead of individual
                 flips.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter. Parcel view
+                only (400 with view=flippers).
         """
         async for item in aiterate_offset(
-            lambda _limit, _pos: self.flips(county_fips=county_fips, state_fips=state_fips, flip_tier=flip_tier, min_profit=min_profit, view=view, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
+            lambda _limit, _pos: self.flips(county_fips=county_fips, state_fips=state_fips, flip_tier=flip_tier, min_profit=min_profit, view=view, tax_delinquent=tax_delinquent, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
             items="data", page_size=page_size, max_items=max_items,
         ):
             yield item
@@ -1086,6 +1169,7 @@ class AsyncDealsResource(AsyncAPIResource):
         min_value: Optional[int] = None,
         zoning: Optional[str] = None,
         top: Optional[bool] = None,
+        tax_delinquent: Optional[bool] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -1111,6 +1195,11 @@ class AsyncDealsResource(AsyncAPIResource):
             zoning: Zoning substring filter.
             top: If true, returns aggregated entity rankings with summary stats instead of
                 per-parcel rows.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter. Parcel list
+                only (400 with top=true and no geography or search).
             limit: Page size, max 500.
             offset: Pagination offset.
         """
@@ -1125,6 +1214,7 @@ class AsyncDealsResource(AsyncAPIResource):
                 "min_value": min_value,
                 "zoning": zoning,
                 "top": top,
+                "tax_delinquent": tax_delinquent,
                 "limit": limit,
                 "offset": offset,
             },
@@ -1144,6 +1234,7 @@ class AsyncDealsResource(AsyncAPIResource):
         min_value: Optional[int] = None,
         zoning: Optional[str] = None,
         top: Optional[bool] = None,
+        tax_delinquent: Optional[bool] = None,
         page_size: Optional[int] = None,
         max_items: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -1174,9 +1265,14 @@ class AsyncDealsResource(AsyncAPIResource):
             zoning: Zoning substring filter.
             top: If true, returns aggregated entity rankings with summary stats instead of
                 per-parcel rows.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter. Parcel list
+                only (400 with top=true and no geography or search).
         """
         async for item in aiterate_offset(
-            lambda _limit, _pos: self.entities(county_fips=county_fips, state_fips=state_fips, entity_type=entity_type, search=search, min_value=min_value, zoning=zoning, top=top, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
+            lambda _limit, _pos: self.entities(county_fips=county_fips, state_fips=state_fips, entity_type=entity_type, search=search, min_value=min_value, zoning=zoning, top=top, tax_delinquent=tax_delinquent, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
             items="data", page_size=page_size, max_items=max_items,
         ):
             yield item
@@ -1189,6 +1285,7 @@ class AsyncDealsResource(AsyncAPIResource):
         min_ratio: Optional[float] = None,
         min_value: Optional[int] = None,
         zoning: Optional[str] = None,
+        tax_delinquent: Optional[bool] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -1210,6 +1307,10 @@ class AsyncDealsResource(AsyncAPIResource):
             min_ratio: Minimum land/improvement ratio.
             min_value: Minimum land assessed value, USD.
             zoning: Zoning substring filter.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter.
             limit: Page size, max 500.
             offset: Pagination offset.
         """
@@ -1222,6 +1323,7 @@ class AsyncDealsResource(AsyncAPIResource):
                 "min_ratio": min_ratio,
                 "min_value": min_value,
                 "zoning": zoning,
+                "tax_delinquent": tax_delinquent,
                 "limit": limit,
                 "offset": offset,
             },
@@ -1239,6 +1341,7 @@ class AsyncDealsResource(AsyncAPIResource):
         min_ratio: Optional[float] = None,
         min_value: Optional[int] = None,
         zoning: Optional[str] = None,
+        tax_delinquent: Optional[bool] = None,
         page_size: Optional[int] = None,
         max_items: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -1265,9 +1368,13 @@ class AsyncDealsResource(AsyncAPIResource):
             min_ratio: Minimum land/improvement ratio.
             min_value: Minimum land assessed value, USD.
             zoning: Zoning substring filter.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter.
         """
         async for item in aiterate_offset(
-            lambda _limit, _pos: self.high_land_ratio(county_fips=county_fips, state_fips=state_fips, min_ratio=min_ratio, min_value=min_value, zoning=zoning, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
+            lambda _limit, _pos: self.high_land_ratio(county_fips=county_fips, state_fips=state_fips, min_ratio=min_ratio, min_value=min_value, zoning=zoning, tax_delinquent=tax_delinquent, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
             items="data", page_size=page_size, max_items=max_items,
         ):
             yield item
@@ -1359,6 +1466,7 @@ class AsyncDealsResource(AsyncAPIResource):
         min_years: Optional[int] = None,
         hold_tier: Optional[Literal["10-15yr", "15-20yr", "20-30yr", "30yr+"]] = None,
         min_value: Optional[int] = None,
+        tax_delinquent: Optional[bool] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -1380,6 +1488,10 @@ class AsyncDealsResource(AsyncAPIResource):
             min_years: Minimum years held.
             hold_tier: Filter by hold-period tier. Case-insensitive; any other value is a 400.
             min_value: Minimum assessed value, USD.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter.
             limit: Page size, max 500.
             offset: Pagination offset.
         """
@@ -1392,6 +1504,7 @@ class AsyncDealsResource(AsyncAPIResource):
                 "min_years": min_years,
                 "hold_tier": hold_tier,
                 "min_value": min_value,
+                "tax_delinquent": tax_delinquent,
                 "limit": limit,
                 "offset": offset,
             },
@@ -1409,6 +1522,7 @@ class AsyncDealsResource(AsyncAPIResource):
         min_years: Optional[int] = None,
         hold_tier: Optional[Literal["10-15yr", "15-20yr", "20-30yr", "30yr+"]] = None,
         min_value: Optional[int] = None,
+        tax_delinquent: Optional[bool] = None,
         page_size: Optional[int] = None,
         max_items: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -1435,9 +1549,13 @@ class AsyncDealsResource(AsyncAPIResource):
             min_years: Minimum years held.
             hold_tier: Filter by hold-period tier. Case-insensitive; any other value is a 400.
             min_value: Minimum assessed value, USD.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter.
         """
         async for item in aiterate_offset(
-            lambda _limit, _pos: self.long_hold(county_fips=county_fips, state_fips=state_fips, min_years=min_years, hold_tier=hold_tier, min_value=min_value, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
+            lambda _limit, _pos: self.long_hold(county_fips=county_fips, state_fips=state_fips, min_years=min_years, hold_tier=hold_tier, min_value=min_value, tax_delinquent=tax_delinquent, limit=_limit, offset=_pos, extra_headers=extra_headers, extra_query=extra_query, timeout=timeout, max_retries=max_retries),
             items="data", page_size=page_size, max_items=max_items,
         ):
             yield item
