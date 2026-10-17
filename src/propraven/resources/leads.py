@@ -29,6 +29,7 @@ class LeadsResource(SyncAPIResource):
         limit: Optional[int] = None,
         preview: Optional[bool] = None,
         mail_ready: Optional[bool] = None,
+        tax_delinquent: Optional[bool] = None,
         payment: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
@@ -57,20 +58,20 @@ class LeadsResource(SyncAPIResource):
         IP-throttled at the free tier. The anonymous security alternative (`{}`) applies to the
         preview ONLY.
 
-        ACCOUNT REQUIRED FOR DELIVERY: a lead is an owner's name and mailing address by area --
-        people data, delivered to PropRaven ACCOUNTS only. A paid (non-preview) pull must carry an
-        API key (`Authorization: Bearer pz_...`), an MCP OAuth token or a signed-in session on EVERY
-        rail. Payment alone (an x402 `X-PAYMENT` header or a prepaid `X-CREDIT-TOKEN`) is not an
-        account: without one the call is refused with HTTP 401 `code: "account_required"`, `reason:
-        "people_data_requires_account"`, before any payment is verified or any credit drawn.
+        ACCOUNT OR PAYMENT FOR DELIVERY: a lead is an owner's name and mailing address by area --
+        people data. It is delivered to a PropRaven ACCOUNT (API key `Authorization: Bearer pz_...`,
+        MCP OAuth token or signed-in session) and to a PAID pull without one: the leads are returned
+        only once the x402 payment SETTLES or the `X-CREDIT-TOKEN` debit succeeds. An unpaid
+        (non-preview) pull without an account is refused with HTTP 401 `code: "account_required"`,
+        `reason: "people_data_requires_account"`.
 
-        PAID ACCESS (preview omitted), for an account, requires ONE of: (a) x402 pay-per-call --
-        send a base64 signed x402 PaymentPayload in the `X-PAYMENT` header together with your
-        credentials; on a successful build the leads are returned and the on-chain settlement
-        receipt is in the `X-PAYMENT-RESPONSE` response header. (b) A prepaid `X-CREDIT-TOKEN`
-        balance. (c) A genuine PAID PropRaven subscription entitlement (lead feeds are included).
-        Being merely authenticated is NOT sufficient. (d) Anything else -> HTTP 402 whose `accepts`
-        array carries the exact payment requirements for this pull.
+        PAID ACCESS (preview omitted) requires ONE of: (a) x402 pay-per-call -- send a base64 signed
+        x402 PaymentPayload in the `X-PAYMENT` header (account credentials optional); on a
+        successful build the leads are returned and the on-chain settlement receipt is in the
+        `X-PAYMENT-RESPONSE` response header. (b) A prepaid `X-CREDIT-TOKEN` balance. (c) A genuine
+        PAID PropRaven subscription entitlement (lead feeds are included). Being merely
+        authenticated is NOT sufficient. (d) Anything else -> HTTP 402 whose `accepts` array carries
+        the exact payment requirements for this pull.
 
         OWNER CONTACT: each delivered lead carries `owner_contact` -- the owner's best mailing
         address, read from ONE address column family of the record with its ZIP, flagged mail_ready.
@@ -105,12 +106,18 @@ class LeadsResource(SyncAPIResource):
                 (street, city, state, 5-digit ZIP) in ONE column family. Parcel-grain signals only
                 (400 on portfolio_owner). Each delivered lead's `owner_contact.mail_ready` is the
                 final word. Narrow with `county` in large states: the filter checks every candidate.
-            payment (``X-PAYMENT`` header): x402 payment, sent TOGETHER with your account
-                credentials (Authorization: Bearer pz_...) -- a payment alone is not an account and
-                is refused with 401 before it is verified: a base64-encoded signed x402
-                PaymentPayload (EIP-3009 transferWithAuthorization over USDC on Base). The signed
-                amount must equal this pull's quoted maxAmountRequired (see the 402 body, or call
-                with preview=true first). Ignored on a preview call, which is free.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter. Requires an
+                account, preview included (401 `account_required` otherwise). Parcel-grain signals
+                only (400 on portfolio_owner).
+            payment (``X-PAYMENT`` header): x402 payment, with or without account credentials (a
+                pull without an account receives the leads only once the payment settles): a
+                base64-encoded signed x402 PaymentPayload (EIP-3009 transferWithAuthorization over
+                USDC on Base). The signed amount must equal this pull's quoted maxAmountRequired
+                (see the 402 body, or call with preview=true first). Ignored on a preview call,
+                which is free.
         """
         return cast("_t.LeadsFindResponse", self._client._request(
             "GET",
@@ -125,6 +132,7 @@ class LeadsResource(SyncAPIResource):
                 "limit": limit,
                 "preview": preview,
                 "mail_ready": mail_ready,
+                "tax_delinquent": tax_delinquent,
             },
             headers={"X-PAYMENT": payment},
             extra_headers=extra_headers,
@@ -149,6 +157,7 @@ class AsyncLeadsResource(AsyncAPIResource):
         limit: Optional[int] = None,
         preview: Optional[bool] = None,
         mail_ready: Optional[bool] = None,
+        tax_delinquent: Optional[bool] = None,
         payment: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
@@ -177,20 +186,20 @@ class AsyncLeadsResource(AsyncAPIResource):
         IP-throttled at the free tier. The anonymous security alternative (`{}`) applies to the
         preview ONLY.
 
-        ACCOUNT REQUIRED FOR DELIVERY: a lead is an owner's name and mailing address by area --
-        people data, delivered to PropRaven ACCOUNTS only. A paid (non-preview) pull must carry an
-        API key (`Authorization: Bearer pz_...`), an MCP OAuth token or a signed-in session on EVERY
-        rail. Payment alone (an x402 `X-PAYMENT` header or a prepaid `X-CREDIT-TOKEN`) is not an
-        account: without one the call is refused with HTTP 401 `code: "account_required"`, `reason:
-        "people_data_requires_account"`, before any payment is verified or any credit drawn.
+        ACCOUNT OR PAYMENT FOR DELIVERY: a lead is an owner's name and mailing address by area --
+        people data. It is delivered to a PropRaven ACCOUNT (API key `Authorization: Bearer pz_...`,
+        MCP OAuth token or signed-in session) and to a PAID pull without one: the leads are returned
+        only once the x402 payment SETTLES or the `X-CREDIT-TOKEN` debit succeeds. An unpaid
+        (non-preview) pull without an account is refused with HTTP 401 `code: "account_required"`,
+        `reason: "people_data_requires_account"`.
 
-        PAID ACCESS (preview omitted), for an account, requires ONE of: (a) x402 pay-per-call --
-        send a base64 signed x402 PaymentPayload in the `X-PAYMENT` header together with your
-        credentials; on a successful build the leads are returned and the on-chain settlement
-        receipt is in the `X-PAYMENT-RESPONSE` response header. (b) A prepaid `X-CREDIT-TOKEN`
-        balance. (c) A genuine PAID PropRaven subscription entitlement (lead feeds are included).
-        Being merely authenticated is NOT sufficient. (d) Anything else -> HTTP 402 whose `accepts`
-        array carries the exact payment requirements for this pull.
+        PAID ACCESS (preview omitted) requires ONE of: (a) x402 pay-per-call -- send a base64 signed
+        x402 PaymentPayload in the `X-PAYMENT` header (account credentials optional); on a
+        successful build the leads are returned and the on-chain settlement receipt is in the
+        `X-PAYMENT-RESPONSE` response header. (b) A prepaid `X-CREDIT-TOKEN` balance. (c) A genuine
+        PAID PropRaven subscription entitlement (lead feeds are included). Being merely
+        authenticated is NOT sufficient. (d) Anything else -> HTTP 402 whose `accepts` array carries
+        the exact payment requirements for this pull.
 
         OWNER CONTACT: each delivered lead carries `owner_contact` -- the owner's best mailing
         address, read from ONE address column family of the record with its ZIP, flagged mail_ready.
@@ -225,12 +234,18 @@ class AsyncLeadsResource(AsyncAPIResource):
                 (street, city, state, 5-digit ZIP) in ONE column family. Parcel-grain signals only
                 (400 on portfolio_owner). Each delivered lead's `owner_contact.mail_ready` is the
                 final word. Narrow with `county` in large states: the filter checks every candidate.
-            payment (``X-PAYMENT`` header): x402 payment, sent TOGETHER with your account
-                credentials (Authorization: Bearer pz_...) -- a payment alone is not an account and
-                is refused with 401 before it is verified: a base64-encoded signed x402
-                PaymentPayload (EIP-3009 transferWithAuthorization over USDC on Base). The signed
-                amount must equal this pull's quoted maxAmountRequired (see the 402 body, or call
-                with preview=true first). Ignored on a preview call, which is free.
+            tax_delinquent: true = only parcels on a treasurer's or tax collector's property-tax
+                delinquency / lien-sale / tax-sale list as of today (status delinquent or in_sale;
+                redeemed and sold never count; expired records never used). Pilot jurisdictions
+                only: a parcel elsewhere never matches. false or absent = no filter. Requires an
+                account, preview included (401 `account_required` otherwise). Parcel-grain signals
+                only (400 on portfolio_owner).
+            payment (``X-PAYMENT`` header): x402 payment, with or without account credentials (a
+                pull without an account receives the leads only once the payment settles): a
+                base64-encoded signed x402 PaymentPayload (EIP-3009 transferWithAuthorization over
+                USDC on Base). The signed amount must equal this pull's quoted maxAmountRequired
+                (see the 402 body, or call with preview=true first). Ignored on a preview call,
+                which is free.
         """
         return cast("_t.LeadsFindResponse", await self._client._request(
             "GET",
@@ -245,6 +260,7 @@ class AsyncLeadsResource(AsyncAPIResource):
                 "limit": limit,
                 "preview": preview,
                 "mail_ready": mail_ready,
+                "tax_delinquent": tax_delinquent,
             },
             headers={"X-PAYMENT": payment},
             extra_headers=extra_headers,

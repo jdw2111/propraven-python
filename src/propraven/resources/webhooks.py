@@ -29,7 +29,8 @@ class WebhooksResource(SyncAPIResource):
 
         ``GET /api/v1/webhooks``
 
-        Returns all webhook endpoints for the calling account, plus the per-tier quota.
+        Returns every webhook endpoint of the calling account (active and disabled), plus the quota
+        of the caller's API tier.
         """
         return cast("_t.WebhooksListResponse", self._client._request(
             "GET",
@@ -61,12 +62,14 @@ class WebhooksResource(SyncAPIResource):
         Creates a new webhook subscription. The returned `secret` is shown ONCE — store it
         server-side and use it to verify every incoming delivery via the `X-PropRaven-Signature`
         header (HMAC-SHA256 over `<unix_ms>.<raw_body>`). Reject deliveries where `|now - t| >
-        5min`.
+        5min`. Every request field is validated before anything is created;
+        `filter_value.parcel_ids` entries are stored as canonical ids
+        (`state_fips:county_fips:parcel_id`). Only active endpoints count toward your quota.
 
         Args:
             url: Customer endpoint. https:// only.
-            event_types: Event types to subscribe to. NOTE: only parcel.sold is live in v1.0; others
-                501.
+            event_types: Event types to subscribe to. All three event types are live: create accepts
+                each of them and PropRaven emits each of them.
             description: Optional human-readable label for your dashboard.
         """
         return cast("_t.WebhooksCreateResponse", self._client._request(
@@ -99,7 +102,8 @@ class WebhooksResource(SyncAPIResource):
 
         ``GET /api/v1/webhooks/{id}``
 
-        Returns the full endpoint record (without the secret).
+        Returns one endpoint as the same snake_case record GET /webhooks lists (the `Webhook`
+        schema). The secret is never returned.
 
         Args:
             id: Webhook endpoint ID.
@@ -127,8 +131,11 @@ class WebhooksResource(SyncAPIResource):
 
         ``DELETE /api/v1/webhooks/{id}``
 
-        Marks the endpoint inactive. Delivery history is preserved. The endpoint can no longer
-        receive new events but past deliveries remain queryable via the deliveries route.
+        Soft disable, not a delete: sets `is_active: false`, `disabled_reason: "user"` and
+        `disabled_at`. The endpoint stays in GET /webhooks with its delivery history (readable via
+        the deliveries route). Nothing more is sent to it, including deliveries already queued.
+        There is no hard delete and no re-enable or update operation; create a new endpoint instead.
+        A disabled endpoint does not count toward the quota.
 
         Args:
             id: Webhook endpoint ID.
@@ -219,7 +226,8 @@ class AsyncWebhooksResource(AsyncAPIResource):
 
         ``GET /api/v1/webhooks``
 
-        Returns all webhook endpoints for the calling account, plus the per-tier quota.
+        Returns every webhook endpoint of the calling account (active and disabled), plus the quota
+        of the caller's API tier.
         """
         return cast("_t.WebhooksListResponse", await self._client._request(
             "GET",
@@ -251,12 +259,14 @@ class AsyncWebhooksResource(AsyncAPIResource):
         Creates a new webhook subscription. The returned `secret` is shown ONCE — store it
         server-side and use it to verify every incoming delivery via the `X-PropRaven-Signature`
         header (HMAC-SHA256 over `<unix_ms>.<raw_body>`). Reject deliveries where `|now - t| >
-        5min`.
+        5min`. Every request field is validated before anything is created;
+        `filter_value.parcel_ids` entries are stored as canonical ids
+        (`state_fips:county_fips:parcel_id`). Only active endpoints count toward your quota.
 
         Args:
             url: Customer endpoint. https:// only.
-            event_types: Event types to subscribe to. NOTE: only parcel.sold is live in v1.0; others
-                501.
+            event_types: Event types to subscribe to. All three event types are live: create accepts
+                each of them and PropRaven emits each of them.
             description: Optional human-readable label for your dashboard.
         """
         return cast("_t.WebhooksCreateResponse", await self._client._request(
@@ -289,7 +299,8 @@ class AsyncWebhooksResource(AsyncAPIResource):
 
         ``GET /api/v1/webhooks/{id}``
 
-        Returns the full endpoint record (without the secret).
+        Returns one endpoint as the same snake_case record GET /webhooks lists (the `Webhook`
+        schema). The secret is never returned.
 
         Args:
             id: Webhook endpoint ID.
@@ -317,8 +328,11 @@ class AsyncWebhooksResource(AsyncAPIResource):
 
         ``DELETE /api/v1/webhooks/{id}``
 
-        Marks the endpoint inactive. Delivery history is preserved. The endpoint can no longer
-        receive new events but past deliveries remain queryable via the deliveries route.
+        Soft disable, not a delete: sets `is_active: false`, `disabled_reason: "user"` and
+        `disabled_at`. The endpoint stays in GET /webhooks with its delivery history (readable via
+        the deliveries route). Nothing more is sent to it, including deliveries already queued.
+        There is no hard delete and no re-enable or update operation; create a new endpoint instead.
+        A disabled endpoint does not count toward the quota.
 
         Args:
             id: Webhook endpoint ID.

@@ -204,7 +204,7 @@ untouched. Numeric fields are typed as numbers, and identifiers (`parcel_id`, `a
 
 <!-- BEGIN GENERATED METHODS (scripts/generate.py) -->
 
-70 operations. Every method exists on both `PropRaven` and `AsyncPropRaven`; methods marked *iter* also have an auto-paginating `<method>_iter(...)` sibling.
+87 operations. Every method exists on both `PropRaven` and `AsyncPropRaven`; methods marked *iter* also have an auto-paginating `<method>_iter(...)` sibling.
 
 | Method | HTTP | Summary |
 | --- | --- | --- |
@@ -214,6 +214,7 @@ untouched. Numeric fields are typed as numbers, and identifiers (`parcel_id`, `a
 | `client.parcels.permits(id)` | `GET /api/v1/parcels/{id}/permits` | Get parcel permits |
 | `client.parcels.deeds(id)` | `GET /api/v1/parcels/{id}/deeds` | Get parcel deed history |
 | `client.parcels.risks(id)` | `GET /api/v1/parcels/{id}/risks` | Get parcel risk assessment |
+| `client.parcels.tax_status(id)` | `GET /api/v1/parcels/{id}/tax-status` | Property-tax delinquency status of a parcel |
 | `client.parcels.geojson()` | `GET /api/v1/parcels/geojson` | Parcel polygons as GeoJSON for a bounding box |
 | `client.parcels.report(id)` | `GET /api/v1/parcels/{id}/report` | Parcel dossier (paid, provenance-first) |
 | `client.parcels.comp_pack(id)` | `GET /api/v1/parcels/{id}/comp-pack` | Comp pack (paid, priced per pack) — with a FREE preview |
@@ -224,6 +225,7 @@ untouched. Numeric fields are typed as numbers, and identifiers (`parcel_id`, `a
 | `client.parcels.occupants(id)` | `GET /api/v1/parcels/{id}/occupants` | Business occupants of a parcel |
 | `client.parcels.violations(id)` | `GET /api/v1/parcels/{id}/violations` | Code violations on a parcel |
 | `client.parcels.pois()` | `GET /api/v1/parcels/poi` | Business parcels in a small bounding box |
+| `client.parcels.distress(id)` | `GET /api/v1/parcels/{id}/distress` | Neighborhood distress index for a parcel's tract and block group |
 | `client.search.parcels()` (*iter*) | `POST /api/v1/search` | Search parcels |
 | `client.search.autocomplete()` | `GET /api/v1/search/autocomplete` | Address / place / parcel autocomplete |
 | `client.search.export()` | `GET /api/v1/search/export` | Export search results as CSV |
@@ -244,6 +246,10 @@ untouched. Numeric fields are typed as numbers, and identifiers (`parcel_id`, `a
 | `client.market.county(fips)` | `GET /api/v1/market/counties/{fips}` | Detailed view for a single county |
 | `client.market.flips()` (*iter*) | `GET /api/v1/market/flips` | Flip-activity summary grouped by county |
 | `client.market.snapshot()` | `GET /api/v1/market/snapshot` | Market snapshot for a geography |
+| `client.market.zillow_context()` | `GET /api/v1/market/zillow/context` | Get qualified regional Zillow context for a property |
+| `client.market.zillow_timeseries()` | `GET /api/v1/market/zillow/timeseries` | Get one provider region monthly series |
+| `client.market.compare_zillow_markets()` | `GET /api/v1/market/zillow/compare` | Compare explicit provider regions at one common period |
+| `client.market.neighborhood_distress()` | `GET /api/v1/neighborhood/distress` | Neighborhood distress index for a tract, block group or county |
 | `client.owners.search()` | `GET /api/v1/owners/search` | Search property owners |
 | `client.owners.get(name)` | `GET /api/v1/owners/{name}` | Get owner profile |
 | `client.owners.properties(name)` (*iter*) | `GET /api/v1/owners/{name}/properties` | Get owner's properties |
@@ -278,6 +284,17 @@ untouched. Numeric fields are typed as numbers, and identifiers (`parcel_id`, `a
 | `client.freshness.datasets()` | `GET /api/v1/freshness/datasets` | Per-dataset availability and freshness |
 | `client.crime.lookup()` | `GET /api/v1/crime/lookup` | Crime score near a point |
 | `client.traffic.stations()` | `GET /api/v1/traffic/stations` | Traffic count stations in a bounding box |
+| `client.licensees.firms()` | `GET /api/v1/licensees/firms` | Search licensed firms in a place |
+| `client.licensees.individuals()` | `GET /api/v1/licensees/individuals` | Search licensed individuals (people data) |
+| `client.intelligence.signals(id)` | `GET /api/v1/parcels/{id}/signals` | Get evidence-backed property signals |
+| `client.intelligence.run(run_id)` | `GET /api/v1/intelligence/runs/{runId}` | Read an owned retained run and evidence |
+| `client.intelligence.create_scenario()` | `POST /api/v1/intelligence/scenarios` | Save an explicit named residual scenario |
+| `client.intelligence.handoff(run_id)` | `GET /api/v1/intelligence/runs/{runId}/handoff` | Prepare an owned structured investigation handoff |
+| `client.zoning.parcel(id)` | `GET /api/v1/parcels/{id}/zoning` | Zoning of a parcel, from the issuing jurisdiction |
+| `client.zoning.search()` | `GET /api/v1/zoning/search` | Screen parcels by zoning |
+| `client.zoning.coverage()` | `GET /api/v1/zoning/coverage` | Zoning coverage per jurisdiction |
+| `client.distribution.r2_info()` | `GET /api/v1/r2-credentials` | R2 delivery metadata |
+| `client.distribution.databricks_info()` | `GET /api/v1/data/databricks/grant` | Databricks Delta Sharing metadata |
 
 <!-- END GENERATED METHODS -->
 

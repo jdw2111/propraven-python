@@ -29,8 +29,15 @@ class FreshnessResource(SyncAPIResource):
 
         ``GET /api/v1/freshness``
 
-        Build and swap times of the served snapshot, plus a source-registry freshness proxy
-        (`content_*`). Free; anonymous callers are IP-throttled.
+        Two different clocks for the served national parcel snapshot. `content_as_of` is the CONTENT
+        date of the served data: how current the records in it are. How it is measured is named in
+        `content_date_basis` and explained in `content_date_note` (read both; the basis can change).
+        `swapped_at` is the time the serving slot was last swapped, i.e. when the current snapshot
+        went live; a swap re-serves data, it does not refresh it, so `swapped_at` can be weeks newer
+        than `content_as_of`. `snapshot_built_at` is when that snapshot was built, `updated_at`
+        mirrors `swapped_at` and `last_enriched_at` mirrors `content_as_of` (both kept for older
+        clients). All values are national: a state still served from an earlier epoch is not
+        reported separately here. Free; anonymous callers are IP-throttled.
         """
         return cast("_t.FreshnessGetResponse", self._client._request(
             "GET",
@@ -78,8 +85,15 @@ class AsyncFreshnessResource(AsyncAPIResource):
 
         ``GET /api/v1/freshness``
 
-        Build and swap times of the served snapshot, plus a source-registry freshness proxy
-        (`content_*`). Free; anonymous callers are IP-throttled.
+        Two different clocks for the served national parcel snapshot. `content_as_of` is the CONTENT
+        date of the served data: how current the records in it are. How it is measured is named in
+        `content_date_basis` and explained in `content_date_note` (read both; the basis can change).
+        `swapped_at` is the time the serving slot was last swapped, i.e. when the current snapshot
+        went live; a swap re-serves data, it does not refresh it, so `swapped_at` can be weeks newer
+        than `content_as_of`. `snapshot_built_at` is when that snapshot was built, `updated_at`
+        mirrors `swapped_at` and `last_enriched_at` mirrors `content_as_of` (both kept for older
+        clients). All values are national: a state still served from an earlier epoch is not
+        reported separately here. Free; anonymous callers are IP-throttled.
         """
         return cast("_t.FreshnessGetResponse", await self._client._request(
             "GET",
