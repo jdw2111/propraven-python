@@ -284,6 +284,248 @@ class MarketResource(SyncAPIResource):
             max_retries=max_retries,
         ))
 
+    def zillow_context(
+        self,
+        *,
+        parcel_id: _t.IntelligenceParcelId,
+        use: Optional[Literal["display", "agent", "export"]] = None,
+        as_of: Optional[str] = None,
+        metrics: Optional[str] = None,
+        window_months: Optional[Literal["12", "36", "60", "120", "600"]] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.MarketZillowContextResponse:
+        """Get qualified regional Zillow context for a property
+
+        ``GET /api/v1/market/zillow/context``
+
+        Requires API-key or first-party session authentication and a current account in the
+        default-off server cohort. Valid current membership does not require a new paid
+        subscription. Existing API quotas still apply. Responses are private, no-store. Unknown and
+        repeated query parameters are rejected. This contract does not indicate source activation,
+        deployment or an SDK release. Use-specific, unexpired reviewed Zillow rights are checked
+        before parcel resolution or repository/cache access. Denied/unknown rights return explicit
+        unavailable metric values, not substitute data. Each metric exposes actual regional
+        geography/variant and freshness; regional values do not become parcel estimates or residual
+        inputs. Only the trusted served parcel supplies ZIP/county/state. Caller-supplied
+        geography/CBSA is rejected; there is no inferred metro match. canonical_id is omitted when
+        rights prevent parcel lookup.
+
+        Args:
+            parcel_id: Canonical or legacy county5 parcel identity. The server derives trusted
+                geography after source-use approval.
+            use: Requested use; checked against current source rights. Agent use is not an external
+                send.
+            as_of: Optional explicit-offset timestamp for the accepted source vintage known at that
+                time. Future/invalid times rejected; unavailable historical vintages are not
+                reconstructed from current data.
+            metrics: Comma-separated unique metric names; defaults to all five. Duplicate names
+                rejected.
+            window_months: Number of calendar months displayed (600 = full available history);
+                missing months remain gaps.
+        """
+        return cast("_t.MarketZillowContextResponse", self._client._request(
+            "GET",
+            "/api/v1/market/zillow/context",
+            query={
+                "parcel_id": parcel_id,
+                "use": use,
+                "as_of": as_of,
+                "metrics": metrics,
+                "window_months": window_months,
+            },
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
+    def zillow_timeseries(
+        self,
+        *,
+        dataset_key: str,
+        region_id: str,
+        start_period: str,
+        end_period: str,
+        as_of: Optional[str] = None,
+        use: Optional[Literal["display", "agent", "export"]] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.MarketZillowTimeseriesResponse:
+        """Get one provider region monthly series
+
+        ``GET /api/v1/market/zillow/timeseries``
+
+        Requires API-key or first-party session authentication and a current account in the
+        default-off server cohort. Valid current membership does not require a new paid
+        subscription. Existing API quotas still apply. Responses are private, no-store. Unknown and
+        repeated query parameters are rejected. This contract does not indicate source activation,
+        deployment or an SDK release. Use-specific, unexpired reviewed Zillow rights are checked
+        before parcel resolution or repository/cache access. Denied/unknown rights return explicit
+        unavailable metric values, not substitute data. Each metric exposes actual regional
+        geography/variant and freshness; regional values do not become parcel estimates or residual
+        inputs. Provider region IDs are not FIPS/CBSA codes. Explicit selection remains regional,
+        not a property mapping. Range is ordered and limited to600 monthly periods.
+
+        Args:
+            dataset_key: Exact enabled dataset registry key (for example zori_metro_monthly);
+                unknown keys rejected.
+            region_id: Explicit Zillow provider region identifier.
+            start_period: Inclusive first calendar month.
+            end_period: Inclusive final calendar month; at most599 months after start.
+            as_of: Optional explicit-offset timestamp for the accepted source vintage known at that
+                time. Future/invalid times rejected; unavailable historical vintages are not
+                reconstructed from current data.
+            use: Requested use; checked against current source rights. Agent use is not an external
+                send.
+        """
+        return cast("_t.MarketZillowTimeseriesResponse", self._client._request(
+            "GET",
+            "/api/v1/market/zillow/timeseries",
+            query={
+                "dataset_key": dataset_key,
+                "region_id": region_id,
+                "start_period": start_period,
+                "end_period": end_period,
+                "as_of": as_of,
+                "use": use,
+            },
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
+    def compare_zillow_markets(
+        self,
+        *,
+        period: str,
+        dataset_key: Optional[str] = None,
+        region_ids: Optional[str] = None,
+        as_of: Optional[str] = None,
+        use: Optional[Literal["display", "agent", "export"]] = None,
+        parcel_id: Optional[_t.IntelligenceParcelId] = None,
+        metric: Optional[Literal["zori", "zhvi", "inventory", "price_cut_share", "median_days_to_pending"]] = None,
+        window_months: Optional[Literal["12", "36", "60"]] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.MarketCompareZillowMarketsResponse:
+        """Compare explicit provider regions at one common period
+
+        ``GET /api/v1/market/zillow/compare``
+
+        Requires API-key or first-party session authentication and a current account in the
+        default-off server cohort. Valid current membership does not require a new paid
+        subscription. Existing API quotas still apply. Responses are private, no-store. Unknown and
+        repeated query parameters are rejected. This contract does not indicate source activation,
+        deployment or an SDK release. Use-specific, unexpired reviewed Zillow rights are checked
+        before parcel resolution or repository/cache access. Denied/unknown rights return explicit
+        unavailable metric values, not substitute data. Each metric exposes actual regional
+        geography/variant and freshness; regional values do not become parcel estimates or residual
+        inputs. Up to five distinct region IDs use one dataset/accepted snapshot and common month.
+        First ID is the reference. Value gaps retain a missing reason; incompatible regions are not
+        converted to comparable parcel data. Alternatively provide parcel_id, metric and period
+        (optional window_months) instead of dataset_key and region_ids. Property geography is
+        resolved only by the server. County/metro/national comparisons require compatible metric
+        definitions, units and variants, one requested month and an explicit captured acceptance
+        cutoff. Each dataset retains its own snapshot provenance. Missing mappings, permissions and
+        variants remain unavailable; mixed query forms are rejected.
+
+        Args:
+            dataset_key: Exact enabled dataset registry key (for example zori_metro_monthly);
+                unknown keys rejected.
+            region_ids: One to five comma-separated distinct provider IDs; first is reference.
+            period: Common monthly reference period.
+            as_of: Optional explicit-offset timestamp for the accepted source vintage known at that
+                time. Future/invalid times rejected; unavailable historical vintages are not
+                reconstructed from current data.
+            use: Requested use; checked against current source rights. Agent use is not an external
+                send.
+        """
+        return cast("_t.MarketCompareZillowMarketsResponse", self._client._request(
+            "GET",
+            "/api/v1/market/zillow/compare",
+            query={
+                "dataset_key": dataset_key,
+                "region_ids": region_ids,
+                "period": period,
+                "as_of": as_of,
+                "use": use,
+                "parcel_id": parcel_id,
+                "metric": metric,
+                "window_months": window_months,
+            },
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
+    def neighborhood_distress(
+        self,
+        *,
+        geoid: Optional[str] = None,
+        county_fips: Optional[str] = None,
+        level: Optional[Literal["tract", "block_group"]] = None,
+        order: Optional[Literal["score_desc", "score_asc"]] = None,
+        min_score: Optional[float] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.MarketNeighborhoodDistressResponse:
+        """Neighborhood distress index for a tract, block group or county
+
+        ``GET /api/v1/neighborhood/distress``
+
+        Area-level neighborhood distress index (census tract / block group, never an address) for
+        value-add and turnaround screening. Give exactly one of `geoid` (11-digit tract: the tract
+        plus its block groups; 12-digit block group: the block group plus its parent tract) or
+        `county_fips` (a screening list; `level`, `order`, `min_score`, `limit` max 100, `offset`).
+        `score` is 0-100, higher = more distressed, from the national components; `score_local` adds
+        tax delinquency, code violations and foreclosure where a local source covers the area and is
+        null elsewhere. Every component carries its status, source and as-of date; missing /
+        suppressed / not_covered components are left out of the score, never zero. Every answer
+        carries the method (weights, missing-component rule), the sources and the county's coverage.
+        Requires an account (API key, MCP OAuth token or signed-in session) and is metered like the
+        other analytics reads; an anonymous caller gets 401 and nothing is read. Before the index's
+        first load the answer is 503 `distress_index_unavailable`.
+
+        Args:
+            geoid: 11-digit census tract or 12-digit block group GEOID.
+            county_fips: 5-digit county FIPS (screening list).
+            level: With county_fips: tract (default) or block_group.
+            order: With county_fips: score_desc (default) or score_asc; unscored areas last.
+            min_score: With county_fips: only areas with score >= this.
+            limit: With county_fips: 1-100.
+            offset: With county_fips.
+        """
+        return cast("_t.MarketNeighborhoodDistressResponse", self._client._request(
+            "GET",
+            "/api/v1/neighborhood/distress",
+            query={
+                "geoid": geoid,
+                "county_fips": county_fips,
+                "level": level,
+                "order": order,
+                "min_score": min_score,
+                "limit": limit,
+                "offset": offset,
+            },
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
 
 class AsyncMarketResource(AsyncAPIResource):
     """``client.market`` operations (async)."""
@@ -549,6 +791,248 @@ class AsyncMarketResource(AsyncAPIResource):
                 "tract": tract,
                 "cbsa": cbsa,
                 "zip": zip,
+            },
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
+    async def zillow_context(
+        self,
+        *,
+        parcel_id: _t.IntelligenceParcelId,
+        use: Optional[Literal["display", "agent", "export"]] = None,
+        as_of: Optional[str] = None,
+        metrics: Optional[str] = None,
+        window_months: Optional[Literal["12", "36", "60", "120", "600"]] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.MarketZillowContextResponse:
+        """Get qualified regional Zillow context for a property
+
+        ``GET /api/v1/market/zillow/context``
+
+        Requires API-key or first-party session authentication and a current account in the
+        default-off server cohort. Valid current membership does not require a new paid
+        subscription. Existing API quotas still apply. Responses are private, no-store. Unknown and
+        repeated query parameters are rejected. This contract does not indicate source activation,
+        deployment or an SDK release. Use-specific, unexpired reviewed Zillow rights are checked
+        before parcel resolution or repository/cache access. Denied/unknown rights return explicit
+        unavailable metric values, not substitute data. Each metric exposes actual regional
+        geography/variant and freshness; regional values do not become parcel estimates or residual
+        inputs. Only the trusted served parcel supplies ZIP/county/state. Caller-supplied
+        geography/CBSA is rejected; there is no inferred metro match. canonical_id is omitted when
+        rights prevent parcel lookup.
+
+        Args:
+            parcel_id: Canonical or legacy county5 parcel identity. The server derives trusted
+                geography after source-use approval.
+            use: Requested use; checked against current source rights. Agent use is not an external
+                send.
+            as_of: Optional explicit-offset timestamp for the accepted source vintage known at that
+                time. Future/invalid times rejected; unavailable historical vintages are not
+                reconstructed from current data.
+            metrics: Comma-separated unique metric names; defaults to all five. Duplicate names
+                rejected.
+            window_months: Number of calendar months displayed (600 = full available history);
+                missing months remain gaps.
+        """
+        return cast("_t.MarketZillowContextResponse", await self._client._request(
+            "GET",
+            "/api/v1/market/zillow/context",
+            query={
+                "parcel_id": parcel_id,
+                "use": use,
+                "as_of": as_of,
+                "metrics": metrics,
+                "window_months": window_months,
+            },
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
+    async def zillow_timeseries(
+        self,
+        *,
+        dataset_key: str,
+        region_id: str,
+        start_period: str,
+        end_period: str,
+        as_of: Optional[str] = None,
+        use: Optional[Literal["display", "agent", "export"]] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.MarketZillowTimeseriesResponse:
+        """Get one provider region monthly series
+
+        ``GET /api/v1/market/zillow/timeseries``
+
+        Requires API-key or first-party session authentication and a current account in the
+        default-off server cohort. Valid current membership does not require a new paid
+        subscription. Existing API quotas still apply. Responses are private, no-store. Unknown and
+        repeated query parameters are rejected. This contract does not indicate source activation,
+        deployment or an SDK release. Use-specific, unexpired reviewed Zillow rights are checked
+        before parcel resolution or repository/cache access. Denied/unknown rights return explicit
+        unavailable metric values, not substitute data. Each metric exposes actual regional
+        geography/variant and freshness; regional values do not become parcel estimates or residual
+        inputs. Provider region IDs are not FIPS/CBSA codes. Explicit selection remains regional,
+        not a property mapping. Range is ordered and limited to600 monthly periods.
+
+        Args:
+            dataset_key: Exact enabled dataset registry key (for example zori_metro_monthly);
+                unknown keys rejected.
+            region_id: Explicit Zillow provider region identifier.
+            start_period: Inclusive first calendar month.
+            end_period: Inclusive final calendar month; at most599 months after start.
+            as_of: Optional explicit-offset timestamp for the accepted source vintage known at that
+                time. Future/invalid times rejected; unavailable historical vintages are not
+                reconstructed from current data.
+            use: Requested use; checked against current source rights. Agent use is not an external
+                send.
+        """
+        return cast("_t.MarketZillowTimeseriesResponse", await self._client._request(
+            "GET",
+            "/api/v1/market/zillow/timeseries",
+            query={
+                "dataset_key": dataset_key,
+                "region_id": region_id,
+                "start_period": start_period,
+                "end_period": end_period,
+                "as_of": as_of,
+                "use": use,
+            },
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
+    async def compare_zillow_markets(
+        self,
+        *,
+        period: str,
+        dataset_key: Optional[str] = None,
+        region_ids: Optional[str] = None,
+        as_of: Optional[str] = None,
+        use: Optional[Literal["display", "agent", "export"]] = None,
+        parcel_id: Optional[_t.IntelligenceParcelId] = None,
+        metric: Optional[Literal["zori", "zhvi", "inventory", "price_cut_share", "median_days_to_pending"]] = None,
+        window_months: Optional[Literal["12", "36", "60"]] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.MarketCompareZillowMarketsResponse:
+        """Compare explicit provider regions at one common period
+
+        ``GET /api/v1/market/zillow/compare``
+
+        Requires API-key or first-party session authentication and a current account in the
+        default-off server cohort. Valid current membership does not require a new paid
+        subscription. Existing API quotas still apply. Responses are private, no-store. Unknown and
+        repeated query parameters are rejected. This contract does not indicate source activation,
+        deployment or an SDK release. Use-specific, unexpired reviewed Zillow rights are checked
+        before parcel resolution or repository/cache access. Denied/unknown rights return explicit
+        unavailable metric values, not substitute data. Each metric exposes actual regional
+        geography/variant and freshness; regional values do not become parcel estimates or residual
+        inputs. Up to five distinct region IDs use one dataset/accepted snapshot and common month.
+        First ID is the reference. Value gaps retain a missing reason; incompatible regions are not
+        converted to comparable parcel data. Alternatively provide parcel_id, metric and period
+        (optional window_months) instead of dataset_key and region_ids. Property geography is
+        resolved only by the server. County/metro/national comparisons require compatible metric
+        definitions, units and variants, one requested month and an explicit captured acceptance
+        cutoff. Each dataset retains its own snapshot provenance. Missing mappings, permissions and
+        variants remain unavailable; mixed query forms are rejected.
+
+        Args:
+            dataset_key: Exact enabled dataset registry key (for example zori_metro_monthly);
+                unknown keys rejected.
+            region_ids: One to five comma-separated distinct provider IDs; first is reference.
+            period: Common monthly reference period.
+            as_of: Optional explicit-offset timestamp for the accepted source vintage known at that
+                time. Future/invalid times rejected; unavailable historical vintages are not
+                reconstructed from current data.
+            use: Requested use; checked against current source rights. Agent use is not an external
+                send.
+        """
+        return cast("_t.MarketCompareZillowMarketsResponse", await self._client._request(
+            "GET",
+            "/api/v1/market/zillow/compare",
+            query={
+                "dataset_key": dataset_key,
+                "region_ids": region_ids,
+                "period": period,
+                "as_of": as_of,
+                "use": use,
+                "parcel_id": parcel_id,
+                "metric": metric,
+                "window_months": window_months,
+            },
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
+    async def neighborhood_distress(
+        self,
+        *,
+        geoid: Optional[str] = None,
+        county_fips: Optional[str] = None,
+        level: Optional[Literal["tract", "block_group"]] = None,
+        order: Optional[Literal["score_desc", "score_asc"]] = None,
+        min_score: Optional[float] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.MarketNeighborhoodDistressResponse:
+        """Neighborhood distress index for a tract, block group or county
+
+        ``GET /api/v1/neighborhood/distress``
+
+        Area-level neighborhood distress index (census tract / block group, never an address) for
+        value-add and turnaround screening. Give exactly one of `geoid` (11-digit tract: the tract
+        plus its block groups; 12-digit block group: the block group plus its parent tract) or
+        `county_fips` (a screening list; `level`, `order`, `min_score`, `limit` max 100, `offset`).
+        `score` is 0-100, higher = more distressed, from the national components; `score_local` adds
+        tax delinquency, code violations and foreclosure where a local source covers the area and is
+        null elsewhere. Every component carries its status, source and as-of date; missing /
+        suppressed / not_covered components are left out of the score, never zero. Every answer
+        carries the method (weights, missing-component rule), the sources and the county's coverage.
+        Requires an account (API key, MCP OAuth token or signed-in session) and is metered like the
+        other analytics reads; an anonymous caller gets 401 and nothing is read. Before the index's
+        first load the answer is 503 `distress_index_unavailable`.
+
+        Args:
+            geoid: 11-digit census tract or 12-digit block group GEOID.
+            county_fips: 5-digit county FIPS (screening list).
+            level: With county_fips: tract (default) or block_group.
+            order: With county_fips: score_desc (default) or score_asc; unscored areas last.
+            min_score: With county_fips: only areas with score >= this.
+            limit: With county_fips: 1-100.
+            offset: With county_fips.
+        """
+        return cast("_t.MarketNeighborhoodDistressResponse", await self._client._request(
+            "GET",
+            "/api/v1/neighborhood/distress",
+            query={
+                "geoid": geoid,
+                "county_fips": county_fips,
+                "level": level,
+                "order": order,
+                "min_score": min_score,
+                "limit": limit,
+                "offset": offset,
             },
             extra_headers=extra_headers,
             extra_query=extra_query,
