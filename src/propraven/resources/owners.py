@@ -359,6 +359,55 @@ class OwnersResource(SyncAPIResource):
             max_retries=max_retries,
         ))
 
+    def pierce(
+        self,
+        *,
+        name: str,
+        state: Optional[str] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.OwnersPierceResponse:
+        """Owner pierce -- who is behind an owning entity and what else they control (account required)
+
+        ``GET /api/v1/owners/pierce``
+
+        For an owner-of-record NAME: the owner's Secretary of State filing (exact registry-name key;
+        FL Sunbiz with officers/managers, TX Comptroller entity records), the people listed on it,
+        the other filings that list the SAME person (surname + first name, compatible middle
+        initial, AND the same street address and ZIP), those related entities and their parcels
+        (owner-of-record spellings). A related entity is `same_sponsor: true` only with two
+        independent kinds of evidence (`link_kinds`: sos_principal, sos_co_principal,
+        sos_entity_address that is not the person's own address, assessor_mailing = a shared
+        county-roll owner mailing address); one link is a candidate. Registered-agent services, mass
+        mail-drop addresses and people listed on more than 150 filings never count as evidence
+        (`people[].excluded`, `excluded_evidence`). A PERSON's name returns the entities that list a
+        person of that name, one candidate per address. `sponsor` sums the subject and its
+        same-sponsor entities.
+
+        ACCOUNT REQUIRED: an API key, an MCP OAuth token or a signed-in session; anonymous and
+        wallet-only callers get HTTP 401 `code: "account_required"` before any read. Counts as ONE
+        people lookup (refunded when nothing is served); recorded in PropRaven's people-data access
+        log.
+
+        Args:
+            name: An owner of record: an entity or a person.
+            state: 2-letter state or 2-digit FIPS; narrows the parcel reads.
+        """
+        return cast("_t.OwnersPierceResponse", self._client._request(
+            "GET",
+            "/api/v1/owners/pierce",
+            query={
+                "name": name,
+                "state": state,
+            },
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
 
 class AsyncOwnersResource(AsyncAPIResource):
     """``client.owners`` operations (async)."""
@@ -698,6 +747,55 @@ class AsyncOwnersResource(AsyncAPIResource):
                 "parcel_id": parcel_id,
                 "name": name,
                 "include_low_confidence": include_low_confidence,
+            },
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
+    async def pierce(
+        self,
+        *,
+        name: str,
+        state: Optional[str] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.OwnersPierceResponse:
+        """Owner pierce -- who is behind an owning entity and what else they control (account required)
+
+        ``GET /api/v1/owners/pierce``
+
+        For an owner-of-record NAME: the owner's Secretary of State filing (exact registry-name key;
+        FL Sunbiz with officers/managers, TX Comptroller entity records), the people listed on it,
+        the other filings that list the SAME person (surname + first name, compatible middle
+        initial, AND the same street address and ZIP), those related entities and their parcels
+        (owner-of-record spellings). A related entity is `same_sponsor: true` only with two
+        independent kinds of evidence (`link_kinds`: sos_principal, sos_co_principal,
+        sos_entity_address that is not the person's own address, assessor_mailing = a shared
+        county-roll owner mailing address); one link is a candidate. Registered-agent services, mass
+        mail-drop addresses and people listed on more than 150 filings never count as evidence
+        (`people[].excluded`, `excluded_evidence`). A PERSON's name returns the entities that list a
+        person of that name, one candidate per address. `sponsor` sums the subject and its
+        same-sponsor entities.
+
+        ACCOUNT REQUIRED: an API key, an MCP OAuth token or a signed-in session; anonymous and
+        wallet-only callers get HTTP 401 `code: "account_required"` before any read. Counts as ONE
+        people lookup (refunded when nothing is served); recorded in PropRaven's people-data access
+        log.
+
+        Args:
+            name: An owner of record: an entity or a person.
+            state: 2-letter state or 2-digit FIPS; narrows the parcel reads.
+        """
+        return cast("_t.OwnersPierceResponse", await self._client._request(
+            "GET",
+            "/api/v1/owners/pierce",
+            query={
+                "name": name,
+                "state": state,
             },
             extra_headers=extra_headers,
             extra_query=extra_query,

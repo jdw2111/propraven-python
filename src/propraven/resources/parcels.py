@@ -122,7 +122,22 @@ class ParcelsResource(SyncAPIResource):
 
         ``GET /api/v1/parcels/{id}/permits``
 
-        Retrieve building and construction permits associated with a parcel.
+        Retrieve building and construction permits associated with a parcel. ACCOUNT REQUIRED (API
+        key, MCP OAuth token or signed-in session). Each permit carries the people the jurisdiction
+        filed on it: `owner_name`, `applicant_name`, `permit_contacts` (every published phone and
+        e-mail with its role, "unknown" where the publisher states none) and
+        `people_fields_published` (the publisher's own people fields, verbatim). Each served read is
+        recorded in PropRaven's people-data access log. LOOKUP CAP (2026-10-10): a response that
+        carries at least one of these people fields counts as ONE lookup against the account's
+        monthly lookup cap, exactly like an owner card (a paid plan includes it; a response with no
+        people field counts nothing; the record page's own read spends nothing twice). At the cap
+        the people fields are null, `people_fields.code` is `lookup_cap_reached` (on the envelope
+        and on each row) and the permits are still returned; nothing is charged. See `lookups` on
+        GET /api/v1/account/usage. PERMIT EVENTS (#868): a permit whose jurisdiction publishes them
+        carries `events` (its inspections, fees, conditions, plan reviews and other records, newest
+        first, at most 25), `event_count`, `events_truncated` and `event_counts`; the envelope's
+        `permit_events_status` says whether they were read. The events' people fields are gated and
+        counted with the permits'.
 
         Args:
             id: Composite parcel identifier (county_fips:parcel_id).
@@ -208,6 +223,48 @@ class ParcelsResource(SyncAPIResource):
             max_retries=max_retries,
         ))
 
+    def tax_status(
+        self,
+        id: str,
+        *,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.ParcelsTaxStatusResponse:
+        """Property-tax delinquency status of a parcel
+
+        ``GET /api/v1/parcels/{id}/tax-status``
+
+        Whether the parcel is on a treasurer's or tax collector's published property-tax
+        delinquency, lien-sale or tax-sale list (pilot jurisdictions), with each record's status,
+        amount (and what the amount is), tax years, sale, publisher, dates and the list's scope.
+        People data (the owner on the tax bill, its mailing address, certificate holders). An
+        ACCOUNT is served like the owner card: a response that serves records counts as one lookup
+        against the account's monthly cap (included on paid plans) and is written to the people-data
+        access log; at the cap the records are withheld with `people_fields.code:
+        lookup_cap_reached` (nothing charged). A caller WITHOUT an account may pay per answer
+        ($0.10, `maxAmountRequired` 100000) with an x402 `X-PAYMENT` header or an `X-CREDIT-TOKEN`:
+        the answer (`paid_via: x402 | credits`) is returned only once the payment settles or the
+        debit succeeds; `not_covered` and `unavailable` answers are free (`charged: false`). An
+        UNPAID caller with no account gets 401 `code: account_required` and nothing else. Before the
+        layer's first load `status` is `unavailable`.
+
+        Args:
+            id: Parcel identifier: the canonical `state_fips:county_fips:parcel_id` form (e.g.
+                `37:119:12104406`), the legacy 5-digit `county_fips5:parcel_id` form, or a PropRaven
+                parcel UUID. URL-encode it.
+        """
+        return cast("_t.ParcelsTaxStatusResponse", self._client._request(
+            "GET",
+            "/api/v1/parcels/{id}/tax-status",
+            path_params={"id": id},
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
     def geojson(
         self,
         *,
@@ -265,8 +322,10 @@ class ParcelsResource(SyncAPIResource):
         The Machine Storefront's per-parcel dossier: a single provenance-first JSON payload carrying
         every POPULATED field for the parcel as `{name, value}` (by default: no `sections`/`fields`
         params delivers everything the quote was priced on), plus the real deeds / comparable-sales
-        / permits sub-tables. The per-field receipts (source, as_of, confidence, coverage tier) are
-        opt-in: `?include_provenance=true` adds a `provenance` map keyed by field name. `?sections=`
+        / permits sub-tables (each comparable sale carries the read-time `similarity_score` 0–100
+        and `similarity_components` the free comps serve; they never change the price). The
+        per-field receipts (source, as_of, confidence, coverage tier) are opt-in:
+        `?include_provenance=true` adds a `provenance` map keyed by field name. `?sections=`
         (identity, valuation, owner, hazard, permits, deeds, market, demographics, `core`, `all`)
         and `?fields=` narrow the delivered field list; anything narrowed out is NAMED in
         `meta.projection.omitted_fields`, and the price never changes with the projection. A ~50 KB
@@ -280,17 +339,16 @@ class ParcelsResource(SyncAPIResource):
 
         ACCESS requires ONE of: (a) x402 pay-per-call -- send a base64 signed x402 PaymentPayload in
         the `X-PAYMENT` header; on a successful build the dossier is returned and the on-chain
-        settlement receipt is in the `X-PAYMENT-RESPONSE` response header. No account is needed for
-        the parcel record, but PEOPLE DATA (owner names, owner mailing addresses, entity principals,
-        deed and sale party names and addresses) is delivered to accounts only: a wallet-only or
-        credit-token buyer receives the dossier with those fields set to null and a top-level
-        `people_fields` marker (see PeopleFieldsWithheld), and the price is computed on exactly that
-        body, so it never counts a field the buyer does not receive. Send your API key with the
-        payment to receive them. (b) A genuine PAID PropRaven subscription entitlement -- the
-        dossier is served on the subscription invoice. Being merely authenticated is NOT sufficient:
-        a free-tier key, or a self-service first-party key with no paid plan, receives a 402. (c)
-        Anything else -> HTTP 402 whose `accepts` array carries the exact x402 payment requirements
-        for this parcel.
+        settlement receipt is in the `X-PAYMENT-RESPONSE` response header. No account is needed: the
+        dossier, PEOPLE DATA included (owner names, owner mailing addresses, entity principals, deed
+        and sale party names and addresses), is delivered to a wallet-only or credit-token buyer
+        once the x402 payment settles or the credit debit succeeds, and the price is computed on
+        exactly that body. An unpaid caller gets the 402 quote and nothing else. Send your API key
+        with the payment to receive them. (b) A genuine PAID PropRaven subscription entitlement --
+        the dossier is served on the subscription invoice. Being merely authenticated is NOT
+        sufficient: a free-tier key, or a self-service first-party key with no paid plan, receives a
+        402. (c) Anything else -> HTTP 402 whose `accepts` array carries the exact x402 payment
+        requirements for this parcel.
 
         Args:
             id: Parcel ID. Composite `county_fips:parcel_id` or county-local id when `county_fips`
@@ -350,16 +408,18 @@ class ParcelsResource(SyncAPIResource):
         and which sales prove it?".
 
         The comps are the SAME precomputed comparable_sales the free GET /api/v1/parcels/{id}/comps
-        route serves; the subject's valuation fields come from parcels_serving. The indicated value
-        is derived transparently (median comp $/sqft x subject sqft when both are known, else the
-        median comp sale price) with an interquartile range, and is reconstructable from the comps
-        in the same payload -- never a black-box AVM.
+        route serves, with the same read-time `similarity_score` (0–100) and `similarity_components`
+        on every comp, plus `similarity_basis`, `similarity_method` and `comp_set_quality`; the
+        subject's valuation fields come from parcels_serving. The indicated value is derived
+        transparently (median comp $/sqft x subject sqft when both are known, else the median comp
+        sale price) with an interquartile range, and is reconstructable from the comps in the same
+        payload -- never a black-box AVM.
 
         PRICE: per pack = clamp($2 x V(subject value) x Q(comp support), $1, $20). Q ramps on the
-        comp count with a small bonus for high median similarity. A subject with ZERO precomputed
-        comps has no evidence to support a number and is returned free, never charged. The exact
-        price is advertised in the 402's accepts[0].maxAmountRequired (USDC atomic units, 6
-        decimals).
+        comp count only: the similarity score is served but never priced (decoupled 2026-10-10,
+        prices unchanged). A subject with ZERO precomputed comps has no evidence to support a number
+        and is returned free, never charged. The exact price is advertised in the 402's
+        accepts[0].maxAmountRequired (USDC atomic units, 6 decimals).
 
         FREE PREVIEW: add preview=true for the subject summary, the comp count + median similarity,
         the exact price, and up to three MASKED comps (parcel/APN withheld, sale price rounded, date
@@ -573,7 +633,10 @@ class ParcelsResource(SyncAPIResource):
         ``GET /api/v1/parcels/{id}/occupants``
 
         Businesses matched to the parcel (names, brands, categories, match confidence), primary
-        occupant first. At most 100 rows; `truncated` says when more exist.
+        occupant first. At most 100 rows; `truncated` says when more exist. For an account,
+        `licensees` adds the licensed businesses the state licensing boards place at the parcel
+        (firms, or individuals at a publisher-labelled business address; match confidence >= 0.80;
+        never a residential parcel).
 
         Args:
             id: Parcel identifier: the canonical `state_fips:county_fips:parcel_id` form (e.g.
@@ -645,6 +708,87 @@ class ParcelsResource(SyncAPIResource):
             "/api/v1/parcels/poi",
             query={
                 "bbox": bbox,
+            },
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
+    def distress(
+        self,
+        id: str,
+        *,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.ParcelsDistressResponse:
+        """Neighborhood distress index for a parcel's tract and block group
+
+        ``GET /api/v1/parcels/{id}/distress``
+
+        The neighborhood distress index rows of the parcel's census tract and block group:
+        area-level, describing the neighborhood, not this property. When the parcel has no block
+        group on record, `block_group` is null with `block_group_reason` and the tract is returned
+        alone. Requires an account (API key, MCP OAuth token or signed-in session) and is metered
+        like the other analytics reads; an anonymous caller gets 401 and nothing is read. Before the
+        index's first load the answer is 503 `distress_index_unavailable`.
+
+        Args:
+            id: Parcel identifier: the canonical `state_fips:county_fips:parcel_id` form (e.g.
+                `37:119:12104406`), the legacy 5-digit `county_fips5:parcel_id` form, or a PropRaven
+                parcel UUID. URL-encode it.
+        """
+        return cast("_t.ParcelsDistressResponse", self._client._request(
+            "GET",
+            "/api/v1/parcels/{id}/distress",
+            path_params={"id": id},
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
+    def observations(
+        self,
+        id: str,
+        *,
+        cohort: str,
+        selector: Optional[str] = None,
+        offset: Optional[int] = None,
+        limit: Optional[int] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.ParcelsObservationsResponse:
+        """Read exact retained and current parcel occurrences
+
+        ``GET /api/v1/parcels/{id}/observations``
+
+        Select a recorded version and physical row occurrence without treating it as a canonical
+        physical parcel. Mutable current rows are explicitly labeled and rechecked by active version
+        and complete row digest. All physical PG columns retain SQL types and text values; original
+        Parquet/raw-sidecar completeness is not asserted. Existing account, people-data meter,
+        confidentiality and opt-out rules apply; canonical originals remain unchanged. Every
+        response is private, no-store. Imported publisher backups are separately projected for this
+        exact selected occurrence with original field names/native types, procedural reason and undo
+        hash references; incomplete or unimported raw-sidecar coverage is explicit, and no
+        cross-version parcel identity is inferred.
+
+        Args:
+            id: Exact UUID or state:county:rawAPN; APN padding is significant.
+        """
+        return cast("_t.ParcelsObservationsResponse", self._client._request(
+            "GET",
+            "/api/v1/parcels/{id}/observations",
+            path_params={"id": id},
+            query={
+                "cohort": cohort,
+                "selector": selector,
+                "offset": offset,
+                "limit": limit,
             },
             extra_headers=extra_headers,
             extra_query=extra_query,
@@ -761,7 +905,22 @@ class AsyncParcelsResource(AsyncAPIResource):
 
         ``GET /api/v1/parcels/{id}/permits``
 
-        Retrieve building and construction permits associated with a parcel.
+        Retrieve building and construction permits associated with a parcel. ACCOUNT REQUIRED (API
+        key, MCP OAuth token or signed-in session). Each permit carries the people the jurisdiction
+        filed on it: `owner_name`, `applicant_name`, `permit_contacts` (every published phone and
+        e-mail with its role, "unknown" where the publisher states none) and
+        `people_fields_published` (the publisher's own people fields, verbatim). Each served read is
+        recorded in PropRaven's people-data access log. LOOKUP CAP (2026-10-10): a response that
+        carries at least one of these people fields counts as ONE lookup against the account's
+        monthly lookup cap, exactly like an owner card (a paid plan includes it; a response with no
+        people field counts nothing; the record page's own read spends nothing twice). At the cap
+        the people fields are null, `people_fields.code` is `lookup_cap_reached` (on the envelope
+        and on each row) and the permits are still returned; nothing is charged. See `lookups` on
+        GET /api/v1/account/usage. PERMIT EVENTS (#868): a permit whose jurisdiction publishes them
+        carries `events` (its inspections, fees, conditions, plan reviews and other records, newest
+        first, at most 25), `event_count`, `events_truncated` and `event_counts`; the envelope's
+        `permit_events_status` says whether they were read. The events' people fields are gated and
+        counted with the permits'.
 
         Args:
             id: Composite parcel identifier (county_fips:parcel_id).
@@ -847,6 +1006,48 @@ class AsyncParcelsResource(AsyncAPIResource):
             max_retries=max_retries,
         ))
 
+    async def tax_status(
+        self,
+        id: str,
+        *,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.ParcelsTaxStatusResponse:
+        """Property-tax delinquency status of a parcel
+
+        ``GET /api/v1/parcels/{id}/tax-status``
+
+        Whether the parcel is on a treasurer's or tax collector's published property-tax
+        delinquency, lien-sale or tax-sale list (pilot jurisdictions), with each record's status,
+        amount (and what the amount is), tax years, sale, publisher, dates and the list's scope.
+        People data (the owner on the tax bill, its mailing address, certificate holders). An
+        ACCOUNT is served like the owner card: a response that serves records counts as one lookup
+        against the account's monthly cap (included on paid plans) and is written to the people-data
+        access log; at the cap the records are withheld with `people_fields.code:
+        lookup_cap_reached` (nothing charged). A caller WITHOUT an account may pay per answer
+        ($0.10, `maxAmountRequired` 100000) with an x402 `X-PAYMENT` header or an `X-CREDIT-TOKEN`:
+        the answer (`paid_via: x402 | credits`) is returned only once the payment settles or the
+        debit succeeds; `not_covered` and `unavailable` answers are free (`charged: false`). An
+        UNPAID caller with no account gets 401 `code: account_required` and nothing else. Before the
+        layer's first load `status` is `unavailable`.
+
+        Args:
+            id: Parcel identifier: the canonical `state_fips:county_fips:parcel_id` form (e.g.
+                `37:119:12104406`), the legacy 5-digit `county_fips5:parcel_id` form, or a PropRaven
+                parcel UUID. URL-encode it.
+        """
+        return cast("_t.ParcelsTaxStatusResponse", await self._client._request(
+            "GET",
+            "/api/v1/parcels/{id}/tax-status",
+            path_params={"id": id},
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
     async def geojson(
         self,
         *,
@@ -904,8 +1105,10 @@ class AsyncParcelsResource(AsyncAPIResource):
         The Machine Storefront's per-parcel dossier: a single provenance-first JSON payload carrying
         every POPULATED field for the parcel as `{name, value}` (by default: no `sections`/`fields`
         params delivers everything the quote was priced on), plus the real deeds / comparable-sales
-        / permits sub-tables. The per-field receipts (source, as_of, confidence, coverage tier) are
-        opt-in: `?include_provenance=true` adds a `provenance` map keyed by field name. `?sections=`
+        / permits sub-tables (each comparable sale carries the read-time `similarity_score` 0–100
+        and `similarity_components` the free comps serve; they never change the price). The
+        per-field receipts (source, as_of, confidence, coverage tier) are opt-in:
+        `?include_provenance=true` adds a `provenance` map keyed by field name. `?sections=`
         (identity, valuation, owner, hazard, permits, deeds, market, demographics, `core`, `all`)
         and `?fields=` narrow the delivered field list; anything narrowed out is NAMED in
         `meta.projection.omitted_fields`, and the price never changes with the projection. A ~50 KB
@@ -919,17 +1122,16 @@ class AsyncParcelsResource(AsyncAPIResource):
 
         ACCESS requires ONE of: (a) x402 pay-per-call -- send a base64 signed x402 PaymentPayload in
         the `X-PAYMENT` header; on a successful build the dossier is returned and the on-chain
-        settlement receipt is in the `X-PAYMENT-RESPONSE` response header. No account is needed for
-        the parcel record, but PEOPLE DATA (owner names, owner mailing addresses, entity principals,
-        deed and sale party names and addresses) is delivered to accounts only: a wallet-only or
-        credit-token buyer receives the dossier with those fields set to null and a top-level
-        `people_fields` marker (see PeopleFieldsWithheld), and the price is computed on exactly that
-        body, so it never counts a field the buyer does not receive. Send your API key with the
-        payment to receive them. (b) A genuine PAID PropRaven subscription entitlement -- the
-        dossier is served on the subscription invoice. Being merely authenticated is NOT sufficient:
-        a free-tier key, or a self-service first-party key with no paid plan, receives a 402. (c)
-        Anything else -> HTTP 402 whose `accepts` array carries the exact x402 payment requirements
-        for this parcel.
+        settlement receipt is in the `X-PAYMENT-RESPONSE` response header. No account is needed: the
+        dossier, PEOPLE DATA included (owner names, owner mailing addresses, entity principals, deed
+        and sale party names and addresses), is delivered to a wallet-only or credit-token buyer
+        once the x402 payment settles or the credit debit succeeds, and the price is computed on
+        exactly that body. An unpaid caller gets the 402 quote and nothing else. Send your API key
+        with the payment to receive them. (b) A genuine PAID PropRaven subscription entitlement --
+        the dossier is served on the subscription invoice. Being merely authenticated is NOT
+        sufficient: a free-tier key, or a self-service first-party key with no paid plan, receives a
+        402. (c) Anything else -> HTTP 402 whose `accepts` array carries the exact x402 payment
+        requirements for this parcel.
 
         Args:
             id: Parcel ID. Composite `county_fips:parcel_id` or county-local id when `county_fips`
@@ -989,16 +1191,18 @@ class AsyncParcelsResource(AsyncAPIResource):
         and which sales prove it?".
 
         The comps are the SAME precomputed comparable_sales the free GET /api/v1/parcels/{id}/comps
-        route serves; the subject's valuation fields come from parcels_serving. The indicated value
-        is derived transparently (median comp $/sqft x subject sqft when both are known, else the
-        median comp sale price) with an interquartile range, and is reconstructable from the comps
-        in the same payload -- never a black-box AVM.
+        route serves, with the same read-time `similarity_score` (0–100) and `similarity_components`
+        on every comp, plus `similarity_basis`, `similarity_method` and `comp_set_quality`; the
+        subject's valuation fields come from parcels_serving. The indicated value is derived
+        transparently (median comp $/sqft x subject sqft when both are known, else the median comp
+        sale price) with an interquartile range, and is reconstructable from the comps in the same
+        payload -- never a black-box AVM.
 
         PRICE: per pack = clamp($2 x V(subject value) x Q(comp support), $1, $20). Q ramps on the
-        comp count with a small bonus for high median similarity. A subject with ZERO precomputed
-        comps has no evidence to support a number and is returned free, never charged. The exact
-        price is advertised in the 402's accepts[0].maxAmountRequired (USDC atomic units, 6
-        decimals).
+        comp count only: the similarity score is served but never priced (decoupled 2026-10-10,
+        prices unchanged). A subject with ZERO precomputed comps has no evidence to support a number
+        and is returned free, never charged. The exact price is advertised in the 402's
+        accepts[0].maxAmountRequired (USDC atomic units, 6 decimals).
 
         FREE PREVIEW: add preview=true for the subject summary, the comp count + median similarity,
         the exact price, and up to three MASKED comps (parcel/APN withheld, sale price rounded, date
@@ -1212,7 +1416,10 @@ class AsyncParcelsResource(AsyncAPIResource):
         ``GET /api/v1/parcels/{id}/occupants``
 
         Businesses matched to the parcel (names, brands, categories, match confidence), primary
-        occupant first. At most 100 rows; `truncated` says when more exist.
+        occupant first. At most 100 rows; `truncated` says when more exist. For an account,
+        `licensees` adds the licensed businesses the state licensing boards place at the parcel
+        (firms, or individuals at a publisher-labelled business address; match confidence >= 0.80;
+        never a residential parcel).
 
         Args:
             id: Parcel identifier: the canonical `state_fips:county_fips:parcel_id` form (e.g.
@@ -1284,6 +1491,87 @@ class AsyncParcelsResource(AsyncAPIResource):
             "/api/v1/parcels/poi",
             query={
                 "bbox": bbox,
+            },
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
+    async def distress(
+        self,
+        id: str,
+        *,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.ParcelsDistressResponse:
+        """Neighborhood distress index for a parcel's tract and block group
+
+        ``GET /api/v1/parcels/{id}/distress``
+
+        The neighborhood distress index rows of the parcel's census tract and block group:
+        area-level, describing the neighborhood, not this property. When the parcel has no block
+        group on record, `block_group` is null with `block_group_reason` and the tract is returned
+        alone. Requires an account (API key, MCP OAuth token or signed-in session) and is metered
+        like the other analytics reads; an anonymous caller gets 401 and nothing is read. Before the
+        index's first load the answer is 503 `distress_index_unavailable`.
+
+        Args:
+            id: Parcel identifier: the canonical `state_fips:county_fips:parcel_id` form (e.g.
+                `37:119:12104406`), the legacy 5-digit `county_fips5:parcel_id` form, or a PropRaven
+                parcel UUID. URL-encode it.
+        """
+        return cast("_t.ParcelsDistressResponse", await self._client._request(
+            "GET",
+            "/api/v1/parcels/{id}/distress",
+            path_params={"id": id},
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
+
+    async def observations(
+        self,
+        id: str,
+        *,
+        cohort: str,
+        selector: Optional[str] = None,
+        offset: Optional[int] = None,
+        limit: Optional[int] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        max_retries: Union[int, NotGiven] = NOT_GIVEN,
+    ) -> _t.ParcelsObservationsResponse:
+        """Read exact retained and current parcel occurrences
+
+        ``GET /api/v1/parcels/{id}/observations``
+
+        Select a recorded version and physical row occurrence without treating it as a canonical
+        physical parcel. Mutable current rows are explicitly labeled and rechecked by active version
+        and complete row digest. All physical PG columns retain SQL types and text values; original
+        Parquet/raw-sidecar completeness is not asserted. Existing account, people-data meter,
+        confidentiality and opt-out rules apply; canonical originals remain unchanged. Every
+        response is private, no-store. Imported publisher backups are separately projected for this
+        exact selected occurrence with original field names/native types, procedural reason and undo
+        hash references; incomplete or unimported raw-sidecar coverage is explicit, and no
+        cross-version parcel identity is inferred.
+
+        Args:
+            id: Exact UUID or state:county:rawAPN; APN padding is significant.
+        """
+        return cast("_t.ParcelsObservationsResponse", await self._client._request(
+            "GET",
+            "/api/v1/parcels/{id}/observations",
+            path_params={"id": id},
+            query={
+                "cohort": cohort,
+                "selector": selector,
+                "offset": offset,
+                "limit": limit,
             },
             extra_headers=extra_headers,
             extra_query=extra_query,

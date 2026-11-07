@@ -32,7 +32,8 @@ class AccountResource(SyncAPIResource):
         Returns the calling key's current-period API usage, included allotment, remaining calls,
         configured per-minute and per-day rate limits, and the hard-cap status. Per-user (all of a
         user's API keys roll up to the same monthly counter, since they share a Stripe
-        subscription).
+        subscription). `lookups` reports the account's monthly lookup cap (record views and people
+        data), a separate counter from API calls.
         """
         return cast("_t.AccountUsageResponse", self._client._request(
             "GET",
@@ -62,7 +63,8 @@ class AsyncAccountResource(AsyncAPIResource):
         Returns the calling key's current-period API usage, included allotment, remaining calls,
         configured per-minute and per-day rate limits, and the hard-cap status. Per-user (all of a
         user's API keys roll up to the same monthly counter, since they share a Stripe
-        subscription).
+        subscription). `lookups` reports the account's monthly lookup cap (record views and people
+        data), a separate counter from API calls.
         """
         return cast("_t.AccountUsageResponse", await self._client._request(
             "GET",
