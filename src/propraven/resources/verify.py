@@ -41,11 +41,11 @@ class VerifyResource(SyncAPIResource):
         empty/all-invalid is free. Fields whitelisted (is_sfha, flood_zone, nri_risk_score,
         owner_occupied, is_absentee, owner_name, assessed_value, market_value, building_sqft,
         year_built, property_type, zoning, lot_size_acres, last_sale_date/price,
-        address/city/state/zip); unknown parcel -> found:false. `owner_name` is people data:
-        verifying it requires an account (API key or signed-in session). A caller without one --
-        anonymous, wallet-only x402 or credit token -- that asks for owner_name is refused with HTTP
-        401 `code: "account_required"` before the quote or any payment; every other field is
-        unaffected.
+        address/city/state/zip); unknown parcel -> found:false. `owner_name` is people data: it is
+        verified for an account (API key or signed-in session), or for a caller without one once its
+        x402 payment settles or its credit debit succeeds. An UNPAID caller without an account (no
+        X-PAYMENT / X-CREDIT-TOKEN, or preview=true) that asks for owner_name is refused with HTTP
+        401 `code: "account_required"` before the quote; every other field is unaffected.
 
         Args:
             parcel_id: Canonical state:county:parcel.
@@ -93,11 +93,11 @@ class VerifyResource(SyncAPIResource):
         empty/all-invalid is free. Fields whitelisted (is_sfha, flood_zone, nri_risk_score,
         owner_occupied, is_absentee, owner_name, assessed_value, market_value, building_sqft,
         year_built, property_type, zoning, lot_size_acres, last_sale_date/price,
-        address/city/state/zip); unknown parcel -> found:false. `owner_name` is people data:
-        verifying it requires an account (API key or signed-in session). A caller without one --
-        anonymous, wallet-only x402 or credit token -- that asks for owner_name is refused with HTTP
-        401 `code: "account_required"` before the quote or any payment; every other field is
-        unaffected.
+        address/city/state/zip); unknown parcel -> found:false. `owner_name` is people data: it is
+        verified for an account (API key or signed-in session), or for a caller without one once its
+        x402 payment settles or its credit debit succeeds. An UNPAID caller without an account (no
+        X-PAYMENT / X-CREDIT-TOKEN, or preview=true) that asks for owner_name is refused with HTTP
+        401 `code: "account_required"` before the quote; every other field is unaffected.
 
         Args:
             preview: FREE count + price.
@@ -149,11 +149,11 @@ class AsyncVerifyResource(AsyncAPIResource):
         empty/all-invalid is free. Fields whitelisted (is_sfha, flood_zone, nri_risk_score,
         owner_occupied, is_absentee, owner_name, assessed_value, market_value, building_sqft,
         year_built, property_type, zoning, lot_size_acres, last_sale_date/price,
-        address/city/state/zip); unknown parcel -> found:false. `owner_name` is people data:
-        verifying it requires an account (API key or signed-in session). A caller without one --
-        anonymous, wallet-only x402 or credit token -- that asks for owner_name is refused with HTTP
-        401 `code: "account_required"` before the quote or any payment; every other field is
-        unaffected.
+        address/city/state/zip); unknown parcel -> found:false. `owner_name` is people data: it is
+        verified for an account (API key or signed-in session), or for a caller without one once its
+        x402 payment settles or its credit debit succeeds. An UNPAID caller without an account (no
+        X-PAYMENT / X-CREDIT-TOKEN, or preview=true) that asks for owner_name is refused with HTTP
+        401 `code: "account_required"` before the quote; every other field is unaffected.
 
         Args:
             parcel_id: Canonical state:county:parcel.
@@ -201,11 +201,11 @@ class AsyncVerifyResource(AsyncAPIResource):
         empty/all-invalid is free. Fields whitelisted (is_sfha, flood_zone, nri_risk_score,
         owner_occupied, is_absentee, owner_name, assessed_value, market_value, building_sqft,
         year_built, property_type, zoning, lot_size_acres, last_sale_date/price,
-        address/city/state/zip); unknown parcel -> found:false. `owner_name` is people data:
-        verifying it requires an account (API key or signed-in session). A caller without one --
-        anonymous, wallet-only x402 or credit token -- that asks for owner_name is refused with HTTP
-        401 `code: "account_required"` before the quote or any payment; every other field is
-        unaffected.
+        address/city/state/zip); unknown parcel -> found:false. `owner_name` is people data: it is
+        verified for an account (API key or signed-in session), or for a caller without one once its
+        x402 payment settles or its credit debit succeeds. An UNPAID caller without an account (no
+        X-PAYMENT / X-CREDIT-TOKEN, or preview=true) that asks for owner_name is refused with HTTP
+        401 `code: "account_required"` before the quote; every other field is unaffected.
 
         Args:
             preview: FREE count + price.
